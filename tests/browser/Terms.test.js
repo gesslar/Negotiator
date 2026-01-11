@@ -298,100 +298,6 @@ accepts:
       })
     })
 
-    describe("file reference parsing", () => {
-      it("parses ref:// file reference", async () => {
-        const schemaPath = join(tmpdir(), "test-terms.json")
-        const schemaContent = {
-          provides: {
-            type: "string",
-            pattern: "^[A-Z][a-z]+"
-          }
-        }
-
-        await fs.writeFile(schemaPath, JSON.stringify(schemaContent, null, 2))
-
-        try {
-          const directory = new DirectoryObject(tmpdir())
-          const result = await Terms.parse("ref://test-terms.json", directory)
-
-          assert.deepEqual(result, schemaContent)
-        } finally {
-          await fs.unlink(schemaPath).catch(() => {}) // Clean up
-        }
-      })
-
-      it("parses ref:// with YAML file", async () => {
-        const schemaPath = join(tmpdir(), "test-terms.yaml")
-        const yamlContent = `
-accepts:
-  type: object
-  properties:
-    name:
-      type: string
-    age:
-      type: number
-      minimum: 0
-`
-
-        await fs.writeFile(schemaPath, yamlContent)
-
-        try {
-          const directory = new DirectoryObject(tmpdir())
-          const result = await Terms.parse("ref://test-terms.yaml", directory)
-
-          assert.equal(result.accepts.type, "object")
-          assert.equal(result.accepts.properties.name.type, "string")
-          assert.equal(result.accepts.properties.age.minimum, 0)
-        } finally {
-          await fs.unlink(schemaPath).catch(() => {})
-        }
-      })
-
-      it("requires DirectoryObject for file references", async () => {
-        await assert.rejects(async () => {
-          await Terms.parse("ref://some-file.json")
-        }, (error) => {
-          return error instanceof Sass &&
-                 error.message.includes("Invalid type")
-        })
-      })
-
-      it("throws error for non-existent file reference", async () => {
-        const directory = new DirectoryObject(tmpdir())
-
-        await assert.rejects(async () => {
-          await Terms.parse("ref://non-existent-file.json", directory)
-        }, Error) // FileObject loading error
-      })
-
-      it("handles relative file paths in references", async () => {
-        const schemaPath = join(tmpdir(), "schemas", "user-schema.json")
-        const schemaContent = {
-          accepts: {
-            type: "object",
-            properties: {
-              username: {type: "string"},
-              email: {type: "string"}
-            }
-          }
-        }
-
-        // Create subdirectory
-        await fs.mkdir(join(tmpdir(), "schemas"), {recursive: true})
-        await fs.writeFile(schemaPath, JSON.stringify(schemaContent))
-
-        try {
-          const directory = new DirectoryObject(join(tmpdir(), "schemas"))
-          const result = await Terms.parse("ref://user-schema.json", directory)
-
-          assert.deepEqual(result, schemaContent)
-        } finally {
-          await fs.unlink(schemaPath).catch(() => {})
-          await fs.rmdir(join(tmpdir(), "schemas")).catch(() => {})
-        }
-      })
-    })
-
     describe("edge cases and error handling", () => {
       it("throws Sass error for invalid termsData type", async () => {
         await assert.rejects(async () => {
@@ -438,15 +344,6 @@ accepts:
 
         // YAML parses this as a simple string value
         assert.equal(result, "ref://")
-      })
-
-      it("validates DirectoryObject type for file references", async () => {
-        await assert.rejects(async () => {
-          await Terms.parse("ref://test.json", "/not/a/directory/object")
-        }, (error) => {
-          return error instanceof Sass &&
-                 error.message.includes("Invalid type")
-        })
       })
     })
 
@@ -624,47 +521,6 @@ provides:
       assert.equal(terms.definition.accepts.type, "object")
       assert.equal(terms.definition.provides.type, "object")
       assert.ok(Array.isArray(terms.definition.accepts.properties.query.properties.filters.items.properties.operator.enum))
-    })
-
-    it("supports schema composition via file references", async () => {
-      // Create base schema file
-      const baseSchemaPath = join(tmpdir(), "base-user.json")
-      const baseSchema = {
-        type: "object",
-        properties: {
-          id: {type: "string"},
-          name: {type: "string"},
-          email: {type: "string"}
-        },
-        required: ["id", "name"]
-      }
-
-      await fs.writeFile(baseSchemaPath, JSON.stringify(baseSchema))
-
-      try {
-        const directory = new DirectoryObject(tmpdir())
-        const parsedBase = await Terms.parse("ref://base-user.json", directory)
-
-        // Extend the base schema
-        const extendedTerms = {
-          accepts: parsedBase,
-          provides: {
-            type: "object",
-            properties: {
-              success: {type: "boolean"},
-              user: parsedBase
-            }
-          }
-        }
-
-        const terms = new Terms(extendedTerms)
-
-        assert.equal(terms.definition.accepts.type, "object")
-        assert.deepEqual(terms.definition.accepts.required, ["id", "name"])
-        assert.equal(terms.definition.provides.properties.user.type, "object")
-      } finally {
-        await fs.unlink(baseSchemaPath).catch(() => {})
-      }
     })
 
     it("handles complex validation rules", async () => {

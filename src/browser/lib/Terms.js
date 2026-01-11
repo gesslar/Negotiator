@@ -21,23 +21,9 @@ export default class Terms {
    * Parses terms data from strings or objects
    *
    * @param {string|object} termsData - Terms data to parse
-   * @param {object} [_directoryObject] - Reserved for server implementation (file references)
    * @returns {object} Parsed terms data
    */
-  static async parse(termsData, _directoryObject) {
-    // File reference support is server-only (requires FileObject/DirectoryObject)
-    // if(Data.isBaseType(termsData, "String")) {
-    //   const match = refex.exec(termsData)
-    //
-    //   if(match?.groups?.file) {
-    //     Valid.type(directoryObject, "DirectoryObject")
-    //
-    //     const file = new FileObject(match.groups.file, directoryObject)
-    //
-    //     return await file.loadData()
-    //   }
-    // }
-
+  static async parse(termsData) {
     if(Data.isBaseType(termsData, "String")) {
       // Try parsing as JSON5/YAML
       try {
@@ -55,9 +41,8 @@ export default class Terms {
       }
     }
 
-    if(Data.isBaseType(termsData, "Object")) {
+    if(Data.isBaseType(termsData, "Object"))
       return termsData
-    }
 
     throw Sass.new(`Invalid terms data type: ${typeof termsData}`)
   }

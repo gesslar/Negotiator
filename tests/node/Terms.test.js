@@ -627,7 +627,6 @@ provides:
     })
 
     it("supports schema composition via file references", async () => {
-      // Create base schema file
       const baseSchemaPath = join(tmpdir(), "base-user.json")
       const baseSchema = {
         type: "object",

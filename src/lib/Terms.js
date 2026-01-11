@@ -1,6 +1,4 @@
-import JSON5 from "json5"
-import yaml from "yaml"
-import {Data, FileObject, Sass, Valid} from "@gesslar/toolkit"
+import {Data, FileObject, Valid} from "@gesslar/toolkit"
 import {Terms as BrowserTerms} from "../browser/index.js"
 
 const refex = /^ref:\/\/(?<file>.*)$/
@@ -18,37 +16,18 @@ export default class Terms extends BrowserTerms {
    * @returns {object} Parsed terms data
    */
   static async parse(termsData, directoryObject) {
-    if(Data.isBaseType(termsData, "String")) {
-      const match = refex.exec(termsData)
+    if(Data.isType(termsData, "String")) {
+      const {file} = refex.exec(termsData)?.groups ?? {}
 
-      if(match?.groups?.file) {
+      if(file) {
         Valid.type(directoryObject, "DirectoryObject")
 
-        const file = new FileObject(match.groups.file, directoryObject)
+        const fo = new FileObject(file, directoryObject)
 
-        return await file.loadData()
-      }
-
-      // Try parsing as JSON5/YAML (using Node Sass for errors)
-      try {
-        const result = JSON5.parse(termsData)
-
-        return result
-      } catch {
-        try {
-          const result = yaml.parse(termsData)
-
-          return result
-        } catch {
-          throw Sass.new(`Could not parse terms data as YAML or JSON: ${termsData}`)
-        }
+        termsData = await fo.loadData()
       }
     }
 
-    if(Data.isBaseType(termsData, "Object")) {
-      return termsData
-    }
-
-    throw Sass.new(`Invalid terms data type: ${typeof termsData}`)
+    return super.parse(termsData)
   }
 }
