@@ -368,16 +368,40 @@ describe("Contract", () => {
 
     it("providerTerms returns provider terms", () => {
       const provider = new Terms({provides: {}})
-      const contract = new Contract(provider, null)
+      const consumer = new Terms({accepts: {}})
+      const contract = new Contract(provider, consumer)
 
       assert.strictEqual(contract.providerTerms, provider)
     })
 
     it("consumerTerms returns consumer terms", () => {
-      const consumer = new Terms({requires: {}})
-      const contract = new Contract(null, consumer)
+      const provider = new Terms({provides: {}})
+      const consumer = new Terms({accepts: {}})
+      const contract = new Contract(provider, consumer)
 
       assert.strictEqual(contract.consumerTerms, consumer)
+    })
+
+    it("throws error when only provider is provided", () => {
+      const provider = new Terms({provides: {}})
+
+      assert.throws(() => {
+        new Contract(provider, null)
+      }, (error) => {
+        return error instanceof Sass &&
+               error.message.includes("Both provider and consumer terms are required")
+      })
+    })
+
+    it("throws error when only consumer is provided", () => {
+      const consumer = new Terms({accepts: {}})
+
+      assert.throws(() => {
+        new Contract(null, consumer)
+      }, (error) => {
+        return error instanceof Sass &&
+               error.message.includes("Both provider and consumer terms are required")
+      })
     })
 
     it("validator returns contract validator", () => {

@@ -665,7 +665,7 @@ describe("Schemer", () => {
         },
         logging: {
           level: "info",
-          file: "/var/log/app.log"
+          file: "app.log"
         }
       }
 

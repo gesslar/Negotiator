@@ -93,11 +93,18 @@ export default class Contract {
    * @private
    */
   #negotiate() {
-    if(!this.#providerTerms || !this.#consumerTerms) {
-      // Single-party contract scenario
+    // Single-party contracts are only allowed when both are explicitly null
+    // (use Contract.fromTerms() for single-party contracts with validation)
+    if(!this.#providerTerms && !this.#consumerTerms) {
+      // Explicit single-party contract scenario (both null)
       this.#isNegotiated = true
 
       return
+    }
+
+    // If only one party is missing, that's an error - not a valid contract
+    if(!this.#providerTerms || !this.#consumerTerms) {
+      throw Sass.new("Both provider and consumer terms are required for contract negotiation. Use Contract.fromTerms() for single-party contracts.")
     }
 
     // Extract content for comparison (ignore TLD metadata)
@@ -160,7 +167,7 @@ export default class Contract {
    */
   #compareTerms(providerTerms, consumerTerms, stack = []) {
     const debug = this.#debug
-    const breadcrumb = key => (stack.length ? `@${[...stack, key].join(".")}` : key)
+    const breadcrumb = key => (stack.length ? `@${[...stack, key].join(".")}` : "")
     const errors = []
 
     if(!providerTerms || !consumerTerms) {
@@ -180,8 +187,9 @@ export default class Contract {
 
       if(consumerRequirement.required && !(key in providerTerms)) {
         debug?.("Provider missing required capability: %o", 2, key)
+        const path = breadcrumb(key)
         errors.push(
-          Sass.new(`Provider missing required capability: ${key} ${breadcrumb(key)}`)
+          Sass.new(`Provider missing required capability: ${key}${path ? ` ${path}` : ""}`)
         )
         continue
       }
@@ -191,9 +199,10 @@ export default class Contract {
         const providedType = providerTerms[key]?.dataType
 
         if(expectedType && providedType && expectedType !== providedType) {
+          const path = breadcrumb(key)
           errors.push(
             Sass.new(
-              `Type mismatch for ${key}: Consumer expects ${expectedType}, provider offers ${providedType} ${breadcrumb(key)}`
+              `Type mismatch for ${key}: Consumer expects ${expectedType}, provider offers ${providedType}${path ? ` ${path}` : ""}`
             )
           )
         }

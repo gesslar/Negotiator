@@ -6,17 +6,17 @@ export default class Terms {
     /**
      * Parses terms data from strings or objects
      *
-     * @param {string|object} termsData - Terms data to parse
-     * @returns {Promise<object>} Parsed terms data
+     * @param {string|Record<string, unknown>} termsData - Terms data to parse
+     * @returns {Promise<Record<string, unknown>>} Parsed terms data
      */
-    static parse(termsData: string | object): Promise<object>;
+    static parse(termsData: string | Record<string, unknown>): Promise<Record<string, unknown>>;
     constructor(definition: any);
     /**
      * Get the terms definition
      *
-     * @returns {object} The terms definition
+     * @returns {Record<string, unknown>} The terms definition
      */
-    get definition(): object;
+    get definition(): Record<string, unknown>;
     #private;
 }
 //# sourceMappingURL=Terms.d.ts.map

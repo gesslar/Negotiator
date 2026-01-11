@@ -30,24 +30,27 @@ Negotiator is environment aware and automatically detects whether it is being
 used in a web browser or in Node.js. You can optionally specify the `node` or
 `browser` variant explicitly.
 
-### Browser-like
+### Browser
 
-TypeScript editors do not pick up types from jsDelivr. If you want inline types
-without installing from npm, use the esm.sh `?dts` URL or install the package
-locally for development and use the CDN at runtime.
+#### esm.sh (recommended for CDN usage)
 
-#### jsDelivr (runtime only)
-
-```html
-https://cdn.jsdelivr.net/npm/@gesslar/negotiator
-```
-
-#### esm.sh (runtime, types)
+esm.sh automatically resolves npm dependencies, so no additional setup is
+needed:
 
 ```html
-https://esm.sh/@gesslar/negotiator
-https://esm.sh/@gesslar/negotiator?dts` (serves `.d.ts` for editors)
+<script type="module">
+  import {Schemer, Terms, Contract} from 'https://esm.sh/@gesslar/negotiator'
+</script>
 ```
+
+For TypeScript editor support, use the `?dts` parameter:
+
+```html
+https://esm.sh/@gesslar/negotiator?dts
+```
+
+Alternatively, install the package locally for development to get full
+TypeScript support.
 
 ### Node.js
 

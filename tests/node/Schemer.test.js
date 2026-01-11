@@ -584,7 +584,7 @@ required:
     })
 
     it("handles file loading errors in fromFile", async () => {
-      const file = new FileObject("/tmp/does-not-exist.json")
+      const file = new FileObject(join(tmpdir(), "does-not-exist.json"))
 
       await assert.rejects(async () => {
         await Schemer.fromFile(file)
@@ -592,7 +592,7 @@ required:
     })
 
     it("handles malformed YAML in fromFile", async () => {
-      const schemaPath = "/tmp/malformed.yaml"
+      const schemaPath = join(tmpdir(), "malformed.yaml")
       const badYaml = `
 type: object
 properties:
@@ -843,7 +843,7 @@ properties:
         },
         logging: {
           level: "info",
-          file: "/var/log/app.log"
+          file: join(tmpdir(), "app.log")
         }
       }
 
