@@ -28,7 +28,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "types:build": "node scripts/build-types.js",
+    "types": "node -e \"require('fs').rmSync('types',{recursive:true,force:true});\" && tsc -p tsconfig.types.json",
     "prepublishOnly": "pnpm run types:build",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",

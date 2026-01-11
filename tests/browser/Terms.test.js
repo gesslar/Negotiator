@@ -348,8 +348,9 @@ accepts:
     })
 
     describe("format fallback behavior", () => {
-      it("tries YAML first, then JSON5 for ambiguous strings", async () => {
-        // This could be valid in both formats, but YAML is tried first
+      it("tries JSON5 first, then YAML for ambiguous strings", async () => {
+        // This could be valid in both formats, but JSON5 is tried first
+        // Since "key: value" is invalid JSON5, it falls back to YAML
         const ambiguousString = "key: value"
 
         const result = await Terms.parse(ambiguousString)
@@ -357,8 +358,8 @@ accepts:
         assert.deepEqual(result, {key: "value"})
       })
 
-      it("falls back to JSON5 when YAML parsing fails", async () => {
-        // Valid JSON5 but invalid YAML due to quotes
+      it("falls back to YAML when JSON5 parsing fails", async () => {
+        // Valid JSON5 - should parse as JSON5
         const json5String = '{"key": "value with: colon"}'
 
         const result = await Terms.parse(json5String)

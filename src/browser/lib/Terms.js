@@ -25,7 +25,9 @@ export default class Terms {
    */
   static async parse(termsData) {
     if(Data.isBaseType(termsData, "String")) {
-      // Try parsing as JSON5/YAML
+      // Try parsing as JSON5 first, then fall back to YAML
+      // JSON5 must be tried first because YAML is too forgiving - it will parse
+      // invalid JSON5 as a string without throwing, preventing proper validation
       try {
         const result = JSON5.parse(termsData)
 
