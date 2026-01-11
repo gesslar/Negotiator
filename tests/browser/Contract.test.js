@@ -142,6 +142,50 @@ describe("Contract", () => {
 
       assert.ok(contract instanceof Contract)
     })
+
+    it("throws when terms definition is not a plain object", () => {
+      assert.throws(() => {
+        Contract.fromTerms("test", "not an object")
+      }, (error) => {
+        return error instanceof Sass &&
+               error.message.includes("Terms definition must be a plain object")
+      })
+
+      assert.throws(() => {
+        Contract.fromTerms("test", null)
+      }, (error) => {
+        return error instanceof Sass &&
+               error.message.includes("Terms definition must be a plain object")
+      })
+
+      assert.throws(() => {
+        Contract.fromTerms("test", [])
+      }, (error) => {
+        return error instanceof Sass &&
+               error.message.includes("Terms definition must be a plain object")
+      })
+    })
+
+    it("throws when terms definition has zero top-level keys", () => {
+      assert.throws(() => {
+        Contract.fromTerms("test", {})
+      }, (error) => {
+        return error instanceof Sass &&
+               error.message.includes("exactly one top-level key")
+      })
+    })
+
+    it("throws when terms definition has multiple top-level keys", () => {
+      assert.throws(() => {
+        Contract.fromTerms("test", {
+          provides: {type: "string"},
+          accepts: {type: "number"}
+        })
+      }, (error) => {
+        return error instanceof Sass &&
+               error.message.includes("exactly one top-level key")
+      })
+    })
   })
 
   describe("validate()", () => {
@@ -275,6 +319,44 @@ describe("Contract", () => {
       assert.throws(() => {
         new Contract(provider, consumer)
       }, /Type mismatch.*Consumer expects.*provider offers/)
+    })
+
+    it("fails when both provider and consumer extracted schemas are null", () => {
+      const providerDef = {
+        provides: null
+      }
+      const consumerDef = {
+        requires: null
+      }
+
+      const provider = new Terms(providerDef)
+      const consumer = new Terms(consumerDef)
+
+      assert.throws(() => {
+        new Contract(provider, consumer)
+      }, (error) => {
+        return error instanceof Sass &&
+               error.message.includes("Both provider and consumer terms are required")
+      })
+    })
+
+    it("fails when both provider and consumer extracted schemas are undefined", () => {
+      const providerDef = {
+        provides: undefined
+      }
+      const consumerDef = {
+        requires: undefined
+      }
+
+      const provider = new Terms(providerDef)
+      const consumer = new Terms(consumerDef)
+
+      assert.throws(() => {
+        new Contract(provider, consumer)
+      }, (error) => {
+        return error instanceof Sass &&
+               error.message.includes("Both provider and consumer terms are required")
+      })
     })
   })
 
