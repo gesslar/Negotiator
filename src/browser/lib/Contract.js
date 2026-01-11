@@ -160,7 +160,7 @@ export default class Contract {
    */
   #compareTerms(providerTerms, consumerTerms, stack = []) {
     const debug = this.#debug
-    const breadcrumb = key => (stack.length ? `@${stack.join(".")}` : key)
+    const breadcrumb = key => (stack.length ? `@${[...stack, key].join(".")}` : key)
     const errors = []
 
     if(!providerTerms || !consumerTerms) {

@@ -352,7 +352,7 @@ accepts:
           await Terms.parse("ref://some-file.json")
         }, (error) => {
           return error instanceof Sass &&
-                 error.message.includes("Invalid type")
+                 error.message.includes("DirectoryObject is required when using file references")
         })
       })
 

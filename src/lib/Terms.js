@@ -1,4 +1,4 @@
-import {Data, FileObject, Valid} from "@gesslar/toolkit"
+import {Data, FileObject, Sass, Valid} from "@gesslar/toolkit"
 import {Terms as BrowserTerms} from "../browser/index.js"
 
 const refex = /^ref:\/\/(?<file>.*)$/
@@ -20,6 +20,10 @@ export default class Terms extends BrowserTerms {
       const {file} = refex.exec(termsData)?.groups ?? {}
 
       if(file) {
+        if(!directoryObject) {
+          throw Sass.new("DirectoryObject is required when using file references (ref://)")
+        }
+
         Valid.type(directoryObject, "DirectoryObject")
 
         const fo = new FileObject(file, directoryObject)
