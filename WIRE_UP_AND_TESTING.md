@@ -12,7 +12,7 @@
   npm run lint            # ESLint + JSDoc rules
   npm run lint:fix        # Auto-fix style issues
   npm test                # node:test suite in tests/browser + tests/node
-  npm run types:build     # Regenerates src/types/*
+  npm run types:build     # Regenerates types/*
   ```
 
 - Node >= 20 required; repo is `type: "module"`
@@ -57,7 +57,7 @@ Type declarations are generated from the JSDoc in `src/**`:
 
 1. Add/adjust JSDoc on any public API you touch.
 2. Regenerate: `npm run types:build`
-3. Check `src/types/index.d.ts` and `src/types/lib/*.d.ts` picked up new exports.
+3. Check `types/index.d.ts` and `types/lib/*.d.ts` picked up new exports.
 
 JSDoc expectations:
 

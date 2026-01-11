@@ -11,6 +11,9 @@ importers:
       '@gesslar/toolkit':
         specifier: ^3.22.2
         version: 3.22.2
+      ajv:
+        specifier: ^8.17.1
+        version: 8.17.1
       json5:
         specifier: ^2.2.3
         version: 2.2.3
@@ -24,9 +27,6 @@ importers:
       '@gesslar/uglier':
         specifier: ^1.0.0
         version: 1.0.0(eslint@9.39.2)
-      ajv:
-        specifier: ^8.17.1
-        version: 8.17.1
       eslint:
         specifier: ^9.39.2
         version: 9.39.2

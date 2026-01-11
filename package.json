@@ -48,33 +48,34 @@
   },
   "exports": {
     ".": {
-      "types": "./src/types/index.d.ts",
+      "types": "./types/index.d.ts",
       "browser": "./src/browser/index.js",
       "node": "./src/index.js",
       "default": "./src/index.js"
     },
     "./browser": {
-      "types": "./src/types/browser/index.d.ts",
+      "types": "./types/browser/index.d.ts",
       "default": "./src/browser/index.js"
     },
     "./node": {
-      "types": "./src/types/index.d.ts",
+      "types": "./types/index.d.ts",
       "default": "./src/index.js"
     }
   },
   "files": [
     "src/",
+    "types/",
     "UNLICENSE.txt"
   ],
   "type": "module",
   "devDependencies": {
     "@gesslar/uglier": "^1.0.0",
-    "ajv": "^8.17.1",
     "eslint": "^9.39.2",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "@gesslar/toolkit": "^3.22.2",
+    "ajv": "^8.17.1",
     "json5": "^2.2.3",
     "undici": "^7.18.2",
     "yaml": "^2.8.2"
