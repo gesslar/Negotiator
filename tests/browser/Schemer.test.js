@@ -1,94 +1,91 @@
 #!/usr/bin/env node
 
-import {describe, it} from "node:test"
+import {describe, it, before, after} from "node:test"
 import assert from "node:assert/strict"
-import {promises as fs} from "node:fs"
-import {join} from "node:path"
-import {tmpdir} from "node:os"
 
-import {FileObject, Sass} from "@gesslar/toolkit"
+import {Sass} from "@gesslar/toolkit"
 import {Schemer} from "../../src/browser/index.js"
-/*
+
+// Store original fetch
+const originalFetch = globalThis.fetch
+
 describe("Schemer", () => {
-  describe("fromFile()", () => {
-    it("creates validator from valid JSON schema file", async () => {
-      // Create a temporary schema file
-      const schemaPath = join(tmpdir(), "test-schema.json")
-      const schema = {
-        type: "object",
-        properties: {
-          name: {type: "string"},
-          age: {type: "number"}
-        },
-        required: ["name"]
+  before(() => {
+    // Mock fetch for fromUrl tests
+    globalThis.fetch = async (url, options) => {
+      // Simulate successful response
+      if(url.toString().includes("valid-schema.json")) {
+        return {
+          ok: true,
+          json: async () => ({
+            type: "object",
+            properties: {
+              name: {type: "string"},
+              age: {type: "number"}
+            },
+            required: ["name"]
+          })
+        }
       }
 
-      await fs.writeFile(schemaPath, JSON.stringify(schema, null, 2))
-
-      try {
-        const file = new FileObject(schemaPath)
-        const validator = await Schemer.fromFile(file)
-
-        assert.equal(typeof validator, "function")
-        assert.equal(validator({name: "John", age: 30}), true)
-        assert.equal(validator({age: 30}), false) // missing required name
-        assert.ok(Array.isArray(validator.errors))
-      } finally {
-        await fs.unlink(schemaPath).catch(() => {}) // Clean up
+      // Simulate 404 response
+      if(url.toString().includes("not-found.json")) {
+        return {
+          ok: false,
+          statusText: "Not Found"
+        }
       }
+
+      // Simulate network error
+      if(url.toString().includes("network-error.json")) {
+        throw new Error("Network error")
+      }
+
+      // Default: return valid schema
+      return {
+        ok: true,
+        json: async () => ({
+          type: "string",
+          minLength: 1
+        })
+      }
+    }
+  })
+
+  after(() => {
+    // Restore original fetch
+    globalThis.fetch = originalFetch
+  })
+
+  describe("fromUrl()", () => {
+    it("creates validator from valid schema URL", async () => {
+      const validator = await Schemer.fromUrl("https://example.com/valid-schema.json")
+
+      assert.equal(typeof validator, "function")
+      assert.equal(validator({name: "John", age: 30}), true)
+      assert.equal(validator({age: 30}), false) // missing required name
+      assert.ok(Array.isArray(validator.errors))
     })
 
-    it("creates validator from YAML schema file", async () => {
-      const schemaPath = join(tmpdir(), "test-schema.yaml")
-      const yamlSchema = `
-type: object
-properties:
-  title:
-    type: string
-    minLength: 1
-  count:
-    type: number
-    minimum: 0
-required:
-  - title
-`
+    it("creates validator from URL object", async () => {
+      const url = new URL("https://example.com/valid-schema.json")
+      const validator = await Schemer.fromUrl(url)
 
-      await fs.writeFile(schemaPath, yamlSchema)
-
-      try {
-        const file = new FileObject(schemaPath)
-        const validator = await Schemer.fromFile(file)
-
-        assert.equal(typeof validator, "function")
-        assert.equal(validator({title: "Test", count: 5}), true)
-        assert.equal(validator({count: 5}), false) // missing required title
-      } finally {
-        await fs.unlink(schemaPath).catch(() => {}) // Clean up
-      }
+      assert.equal(typeof validator, "function")
+      assert.equal(validator({name: "Alice", age: 25}), true)
     })
 
     it("accepts AJV options", async () => {
-      const schemaPath = join(tmpdir(), "test-schema-ajv.json")
-      const schema = {type: "string"}
+      const options = {allErrors: false, verbose: false}
+      const validator = await Schemer.fromUrl("https://example.com/valid-schema.json", options)
 
-      await fs.writeFile(schemaPath, JSON.stringify(schema))
-
-      try {
-        const file = new FileObject(schemaPath)
-        const options = {allErrors: false, verbose: false}
-        const validator = await Schemer.fromFile(file, options)
-
-        assert.equal(typeof validator, "function")
-        assert.equal(validator("hello"), true)
-        assert.equal(validator(123), false)
-      } finally {
-        await fs.unlink(schemaPath).catch(() => {})
-      }
+      assert.equal(typeof validator, "function")
+      assert.equal(validator({name: "Test"}), true)
     })
 
-    it("throws Sass error for invalid file parameter", async () => {
+    it("throws Sass error for invalid URL parameter", async () => {
       await assert.rejects(async () => {
-        await Schemer.fromFile("not a FileObject")
+        await Schemer.fromUrl(123)
       }, (error) => {
         return error instanceof Sass &&
                error.message.includes("Invalid type")
@@ -96,46 +93,24 @@ required:
     })
 
     it("throws Sass error for invalid options parameter", async () => {
-      const schemaPath = join(tmpdir(), "test-schema-invalid-options.json")
-      const schema = {type: "string"}
-
-      await fs.writeFile(schemaPath, JSON.stringify(schema))
-
-      try {
-        const file = new FileObject(schemaPath)
-
-        await assert.rejects(async () => {
-          await Schemer.fromFile(file, "not an object")
-        }, (error) => {
-          return error instanceof Sass &&
-                 error.message.includes("Options must be a plain object")
-        })
-      } finally {
-        await fs.unlink(schemaPath).catch(() => {})
-      }
-    })
-
-    it("throws error for non-existent file", async () => {
-      const file = new FileObject(join(tmpdir(), "non-existent-schema.json"))
-
       await assert.rejects(async () => {
-        await Schemer.fromFile(file)
-      }, Error) // Will throw filesystem error
+        await Schemer.fromUrl("https://example.com/schema.json", "not an object")
+      }, (error) => {
+        return error instanceof Sass &&
+               error.message.includes("Options must be a plain object")
+      })
     })
 
-    it("throws error for invalid JSON schema file", async () => {
-      const schemaPath = join(tmpdir(), "invalid-schema.json")
-      await fs.writeFile(schemaPath, "{ invalid json }")
+    it("throws Sass error for HTTP error response", async () => {
+      await assert.rejects(async () => {
+        await Schemer.fromUrl("https://example.com/not-found.json")
+      }, Sass)
+    })
 
-      try {
-        const file = new FileObject(schemaPath)
-
-        await assert.rejects(async () => {
-          await Schemer.fromFile(file)
-        }, Error) // JSON parsing error
-      } finally {
-        await fs.unlink(schemaPath).catch(() => {})
-      }
+    it("throws Sass error for network errors", async () => {
+      await assert.rejects(async () => {
+        await Schemer.fromUrl("https://example.com/network-error.json")
+      }, Sass)
     })
   })
 
@@ -240,7 +215,7 @@ required:
       const validator = Schemer.getValidator(schema, options)
 
       assert.equal(typeof validator, "function")
-      // Test pattern validation instead of email format
+      // Test pattern validation
       assert.equal(validator("test@example.com"), true)
       assert.equal(validator("invalid-email"), false)
     })
@@ -476,36 +451,6 @@ required:
       }, Error)
     })
 
-    it("handles file loading errors in fromFile", async () => {
-      const file = new FileObject("/tmp/does-not-exist.json")
-
-      await assert.rejects(async () => {
-        await Schemer.fromFile(file)
-      }, Error)
-    })
-
-    it("handles malformed YAML in fromFile", async () => {
-      const schemaPath = "/tmp/malformed.yaml"
-      const badYaml = `
-type: object
-properties:
-  name: string
-    invalid_indentation: true
-`
-
-      await fs.writeFile(schemaPath, badYaml)
-
-      try {
-        const file = new FileObject(schemaPath)
-
-        await assert.rejects(async () => {
-          await Schemer.fromFile(file)
-        }, Error)
-      } finally {
-        await fs.unlink(schemaPath).catch(() => {})
-      }
-    })
-
     it("propagates AJV errors with proper context", async () => {
       const schema = {
         type: "object",
@@ -524,40 +469,23 @@ properties:
   })
 
   describe("updated API behavior", () => {
-    it("fromFile() returns validator function directly", async () => {
-      const schemaPath = join(tmpdir(), "direct-validator.json")
-      const schema = {
-        type: "object",
-        properties: {
-          name: {type: "string"},
-          age: {type: "number", minimum: 0}
-        },
-        required: ["name"]
-      }
+    it("fromUrl() returns validator function directly", async () => {
+      const validator = await Schemer.fromUrl("https://example.com/valid-schema.json")
 
-      await fs.writeFile(schemaPath, JSON.stringify(schema, null, 2))
+      // Should be a function, not a Schemer instance
+      assert.equal(typeof validator, "function")
+      assert.ok(validator.name.includes("validate") || validator.constructor.name === "Function")
 
-      try {
-        const file = new FileObject(schemaPath)
-        const validator = await Schemer.fromFile(file)
+      // Should work like a direct AJV validator
+      const validData = {name: "Alice", age: 25}
+      const invalidData = {age: -5} // missing name, negative age
 
-        // Should be a function, not a Schemer instance
-        assert.equal(typeof validator, "function")
-        assert.ok(validator.name.includes("validate") || validator.constructor.name === "Function")
+      assert.equal(validator(validData), true)
+      assert.equal(validator.errors, null)
 
-        // Should work like a direct AJV validator
-        const validData = {name: "Alice", age: 25}
-        const invalidData = {age: -5} // missing name, negative age
-
-        assert.equal(validator(validData), true)
-        assert.equal(validator.errors, null)
-
-        assert.equal(validator(invalidData), false)
-        assert.ok(Array.isArray(validator.errors))
-        assert.ok(validator.errors.length > 0)
-      } finally {
-        await fs.unlink(schemaPath).catch(() => {})
-      }
+      assert.equal(validator(invalidData), false)
+      assert.ok(Array.isArray(validator.errors))
+      assert.ok(validator.errors.length > 0)
     })
 
     it("from() returns validator function directly", async () => {
@@ -588,35 +516,36 @@ properties:
     it("static methods and getValidator() return same type", async () => {
       const schema = {type: "string", minLength: 5}
 
-      const validatorFromFile = await (async () => {
-        const schemaPath = join(tmpdir(), "consistency-test.json")
-        await fs.writeFile(schemaPath, JSON.stringify(schema))
-        try {
-          const file = new FileObject(schemaPath)
-          return await Schemer.fromFile(file)
-        } finally {
-          await fs.unlink(schemaPath).catch(() => {})
-        }
-      })()
+      // Update mock to return the schema we need for this test
+      const originalFetch = globalThis.fetch
+      globalThis.fetch = async () => ({
+        ok: true,
+        json: async () => schema
+      })
 
-      const validatorFromObject = await Schemer.from(schema)
-      const validatorDirect = Schemer.getValidator(schema)
+      try {
+        const validatorFromUrl = await Schemer.fromUrl("https://example.com/schema.json")
+        const validatorFromObject = await Schemer.from(schema)
+        const validatorDirect = Schemer.getValidator(schema)
 
       // All should return the same type of function
-      assert.equal(typeof validatorFromFile, "function")
+      assert.equal(typeof validatorFromUrl, "function")
       assert.equal(typeof validatorFromObject, "function")
       assert.equal(typeof validatorDirect, "function")
 
       // All should behave identically
       const testData = "hello" // valid
-      assert.equal(validatorFromFile(testData), true)
+      assert.equal(validatorFromUrl(testData), true)
       assert.equal(validatorFromObject(testData), true)
       assert.equal(validatorDirect(testData), true)
 
       const badData = "hi" // too short
-      assert.equal(validatorFromFile(badData), false)
+      assert.equal(validatorFromUrl(badData), false)
       assert.equal(validatorFromObject(badData), false)
       assert.equal(validatorDirect(badData), false)
+      } finally {
+        globalThis.fetch = originalFetch
+      }
     })
 
     it("can be used directly without intermediate variables", async () => {
@@ -837,4 +766,3 @@ properties:
     })
   })
 })
-*/

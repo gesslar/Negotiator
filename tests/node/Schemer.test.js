@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import {describe, it} from "node:test"
+import {describe, it, before, after} from "node:test"
 import assert from "node:assert/strict"
 import {promises as fs} from "node:fs"
 import {join} from "node:path"
@@ -9,7 +9,114 @@ import {tmpdir} from "node:os"
 import {FileObject, Sass} from "@gesslar/toolkit"
 import {Schemer} from "../../src/index.js"
 
+// Store original fetch
+const originalFetch = globalThis.fetch
+
 describe("Schemer", () => {
+  before(() => {
+    // Mock fetch for fromUrl tests
+    globalThis.fetch = async (url, options) => {
+      // Simulate successful response
+      if(url.toString().includes("valid-schema.json")) {
+        return {
+          ok: true,
+          json: async () => ({
+            type: "object",
+            properties: {
+              name: {type: "string"},
+              age: {type: "number"}
+            },
+            required: ["name"]
+          })
+        }
+      }
+
+      // Simulate 404 response
+      if(url.toString().includes("not-found.json")) {
+        return {
+          ok: false,
+          statusText: "Not Found"
+        }
+      }
+
+      // Simulate network error
+      if(url.toString().includes("network-error.json")) {
+        throw new Error("Network error")
+      }
+
+      // Default: return valid schema
+      return {
+        ok: true,
+        json: async () => ({
+          type: "string",
+          minLength: 1
+        })
+      }
+    }
+  })
+
+  after(() => {
+    // Restore original fetch
+    globalThis.fetch = originalFetch
+  })
+
+  describe("fromUrl()", () => {
+    it("creates validator from valid schema URL", async () => {
+      const validator = await Schemer.fromUrl("https://example.com/valid-schema.json")
+
+      assert.equal(typeof validator, "function")
+      assert.equal(validator({name: "John", age: 30}), true)
+      assert.equal(validator({age: 30}), false) // missing required name
+      assert.ok(Array.isArray(validator.errors))
+    })
+
+    it("creates validator from URL object", async () => {
+      const url = new URL("https://example.com/valid-schema.json")
+      const validator = await Schemer.fromUrl(url)
+
+      assert.equal(typeof validator, "function")
+      assert.equal(validator({name: "Alice", age: 25}), true)
+    })
+
+    it("accepts AJV options", async () => {
+      const options = {allErrors: false, verbose: false}
+      const validator = await Schemer.fromUrl("https://example.com/valid-schema.json", options)
+
+      assert.equal(typeof validator, "function")
+      assert.equal(validator({name: "Test"}), true)
+    })
+
+    it("throws Sass error for invalid URL parameter", async () => {
+      await assert.rejects(async () => {
+        await Schemer.fromUrl(123)
+      }, (error) => {
+        return error instanceof Sass &&
+               error.message.includes("Invalid type")
+      })
+    })
+
+    it("throws Sass error for invalid options parameter", async () => {
+      await assert.rejects(async () => {
+        await Schemer.fromUrl("https://example.com/schema.json", "not an object")
+      }, (error) => {
+        return error instanceof Sass &&
+               error.message.includes("Options must be a plain object")
+      })
+    })
+
+    it("throws Sass error for HTTP error response", async () => {
+      await assert.rejects(async () => {
+        await Schemer.fromUrl("https://example.com/not-found.json")
+      }, Sass)
+    })
+
+    it("throws Sass error for network errors", async () => {
+      await assert.rejects(async () => {
+        await Schemer.fromUrl("https://example.com/network-error.json")
+      }, Sass)
+    })
+  })
+
   describe("fromFile()", () => {
     it("creates validator from valid JSON schema file", async () => {
       // Create a temporary schema file
