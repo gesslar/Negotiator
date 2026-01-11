@@ -24,7 +24,7 @@ export default class Terms {
    * @returns {object} Parsed terms data
    */
   static async parse(termsData) {
-    if(Data.isBaseType(termsData, "String")) {
+    if(Data.isType(termsData, "String")) {
       // Try parsing as JSON5 first, then fall back to YAML
       // JSON5 must be tried first because YAML is too forgiving - it will parse
       // invalid JSON5 as a string without throwing, preventing proper validation
@@ -43,7 +43,7 @@ export default class Terms {
       }
     }
 
-    if(Data.isBaseType(termsData, "Object"))
+    if(Data.isType(termsData, "Object"))
       return termsData
 
     throw Sass.new(`Invalid terms data type: ${typeof termsData}`)
