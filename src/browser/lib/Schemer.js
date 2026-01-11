@@ -1,17 +1,23 @@
-import {Data, Glog, Sass, Util, Valid} from "@gesslar/toolkit"
+import {Data, Sass, Util, Valid} from "@gesslar/toolkit"
 import Ajv from "ajv"
-import {URL} from "node:url"
-import {request} from "undici"
 
 /**
  * Schemer provides utilities for compiling and validating JSON schemas using AJV.
  *
  * Usage:
- *   - Use Schemer.from(schemaData, options) to create a validator from a schema object.
- *   - Use Schemer.getValidator(schema, options) to get a raw AJV validator function.
- *   - Use Schemer.reportValidationErrors(errors) to format AJV validation errors.
+ *   - Use `Schemer.fromUrl(url, options)` to create a validator from a URL.
+ *   - Use `Schemer.from(schemaData, options)` to create a validator from a schema object.
+ *   - Use `Schemer.getValidator(schema, options)` to get a raw AJV validator function.
+ *   - Use `Schemer.reportValidationErrors(errors)` to format AJV validation errors.
  */
 export default class Schemer {
+  /**
+   * Creates a validator function from a schema URL
+   *
+   * @param {URL|string} url - The URL to fetch the schema from
+   * @param {object} [options={}] - AJV options
+   * @returns {Promise<(data: unknown) => boolean>} The AJV validator function, which may have additional properties (e.g., `.errors`)
+   */
   static async fromUrl(url, options={}) {
     Valid.type(url, "URL|String")
     Valid.assert(Data.isPlainObject(options), "Options must be a plain object.")
@@ -20,31 +26,20 @@ export default class Schemer {
       if(Data.isType(url, "String"))
         url = new URL(url)
 
-      const headers = new Headers([
-        ["User-Agent", "Schemer"],
-        ["Accept", "application/json"],
-        ["Cache-Control", "max-age=604800"]
-      ])
-
-      Glog(url)
-
-      const response = await request(url, {
-        headers: [
-          ["User-Agent", "Schemer"],
-          ["Accept", "application/json"],
-          ["Cache-Control", "max-age=604800"]
-        ],
+      const response = await fetch(url, {
+        headers: {
+          "User-Agent": "Schemer",
+          "Accept": "application/json",
+          "Cache-Control": "max-age=604800"
+        },
         method: "GET",
-        redirect: "follow",
-        headers
+        redirect: "follow"
       })
 
       if(!response.ok)
-        throw Sass.new(response.statusCode)
+        throw Sass.new(response.status)
 
-      const json = await response.body.json()
-
-      Glog(json)
+      const json = await response.json()
 
       return Schemer.getValidator(json, options)
     } catch(error) {

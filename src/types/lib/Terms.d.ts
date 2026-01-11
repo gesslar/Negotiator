@@ -2,7 +2,7 @@
  * Node-enhanced Terms with file reference support.
  * Extends the browser version with ref:// file loading capabilities and uses Node Sass for errors.
  */
-export default class Terms {
+export default class Terms extends BrowserTerms {
     /**
      * Parses terms data, handling file references
      *
@@ -12,4 +12,5 @@ export default class Terms {
      */
     static parse(termsData: string | object, directoryObject: any | null): object;
 }
+import { Terms as BrowserTerms } from "../browser/index.js";
 //# sourceMappingURL=Terms.d.ts.map

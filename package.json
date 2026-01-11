@@ -55,7 +55,7 @@
       "default": "./src/index.js"
     },
     "./browser": {
-      "types": "./src/types/index.d.ts",
+      "types": "./src/types/browser/index.d.ts",
       "default": "./src/browser/index.js"
     },
     "./node": {

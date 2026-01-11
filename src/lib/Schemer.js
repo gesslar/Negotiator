@@ -6,12 +6,14 @@ import {Data, Valid} from "@gesslar/toolkit"
  * Extends the browser version with FileObject support and uses Node Sass for errors.
  *
  * Usage:
- *   - Use Schemer.fromFile(file, options) to create a validator from a FileObject.
- *   - Use Schemer.from(schemaData, options) to create a validator from a schema object.
- *   - Use Schemer.getValidator(schema, options) to get a raw AJV validator function.
- *   - Use Schemer.reportValidationErrors(errors) to format AJV validation errors.
+ *   - Use `Schemer.fromUrl(url, options)` to create a validator from a URL (inherited from browser version).
+ *   - Use `Schemer.fromFile(file, options)` to create a validator from a FileObject.
+ *   - Use `Schemer.from(schemaData, options)` to create a validator from a schema object.
+ *   - Use `Schemer.getValidator(schema, options)` to get a raw AJV validator function.
+ *   - Use `Schemer.reportValidationErrors(errors)` to format AJV validation errors.
  */
 export default class Schemer extends BrowserSchemer {
+
   static async from(schemaData={}, options={}) {
     Valid.assert(Data.isPlainObject(schemaData), "Schema data must be a plain object.")
     Valid.assert(Data.isPlainObject(options), "Options must be a plain object.")

@@ -22,7 +22,7 @@ export default class Contract {
      * @param {Function} [debug] - Debug function
      * @returns {Contract} New contract instance
      */
-    static fromTerms(name: string, termsDefinition: object, validator?: any | null, debug?: Function): Contract;
+    static fromTerms(name: string, termsDefinition: object, validator?: import("ajv").ValidateFunction | null, debug?: Function): Contract;
     /**
      * Creates a contract by negotiating between provider and consumer terms
      *
