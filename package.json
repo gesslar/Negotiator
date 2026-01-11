@@ -1,0 +1,83 @@
+{
+  "name": "@gesslar/negotiator",
+  "description": "Schema validation, terms, and contracts. Avada Schemata!",
+  "author": {
+    "name": "gesslar",
+    "url": "https://gesslar.dev"
+  },
+  "version": "0.1.0",
+  "license": "Unlicense",
+  "homepage": "https://github.com/gesslar/Negotiator#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gesslar/Negotiator.git"
+  },
+  "keywords": [
+    "schema",
+    "validation",
+    "json-schema",
+    "ajv",
+    "contract",
+    "terms",
+    "negotiation",
+    "interface",
+    "api-contract"
+  ],
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "types:build": "node scripts/build-types.js",
+    "prepublishOnly": "pnpm run types:build",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "submit": "pnpm publish --access public --//registry.npmjs.org/:_authToken=\"${NPM_ACCESS_TOKEN}\"",
+    "update": "pnpm self-update && pnpx npm-check-updates -u && pnpm install",
+    "test": "node --test tests/**/*.test.js",
+    "pr": "gt submit -p --ai",
+    "patch": "pnpm version patch",
+    "minor": "pnpm version minor",
+    "major": "pnpm version major",
+    "work": "node work/run-all.js",
+    "work:schema": "node work/01-basic-schema.js",
+    "work:terms": "node work/02-terms-definition.js",
+    "work:contract": "node work/03-contract-negotiation.js",
+    "work:files": "node work/04-file-operations.js",
+    "work:demo": "node work/05-real-world.js",
+    "work:interactive": "node work/interactive-test.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/types/index.d.ts",
+      "browser": "./src/browser/index.js",
+      "node": "./src/index.js",
+      "default": "./src/index.js"
+    },
+    "./browser": {
+      "types": "./src/types/index.d.ts",
+      "default": "./src/browser/index.js"
+    },
+    "./node": {
+      "types": "./src/types/index.d.ts",
+      "default": "./src/index.js"
+    }
+  },
+  "files": [
+    "src/",
+    "UNLICENSE.txt"
+  ],
+  "type": "module",
+  "devDependencies": {
+    "@gesslar/uglier": "^1.0.0",
+    "ajv": "^8.17.1",
+    "eslint": "^9.39.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@gesslar/toolkit": "^3.22.2",
+    "json5": "^2.2.3",
+    "undici": "^7.18.2",
+    "yaml": "^2.8.2"
+  }
+}
