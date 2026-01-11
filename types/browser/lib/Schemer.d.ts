@@ -16,7 +16,14 @@ export default class Schemer {
      * @returns {Promise<(data: unknown) => boolean>} The AJV validator function, which may have additional properties (e.g., `.errors`)
      */
     static fromUrl(url: URL | string, options?: object): Promise<(data: unknown) => boolean>;
-    static from(schemaData?: {}, options?: {}): Promise<(data: unknown) => boolean>;
+    /**
+     * Creates a validator function from a schema object
+     *
+     * @param {object} [schemaData={}] - Schema data object
+     * @param {object} [options={}] - AJV options
+     * @returns {Promise<(data: unknown) => boolean>} The AJV validator function, which may have additional properties (e.g., `.errors`)
+     */
+    static from(schemaData?: object, options?: object): Promise<(data: unknown) => boolean>;
     /**
      * Creates a validator function from a schema object
      *

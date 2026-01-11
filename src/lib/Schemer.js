@@ -13,7 +13,13 @@ import {Data, Valid} from "@gesslar/toolkit"
  *   - Use `Schemer.reportValidationErrors(errors)` to format AJV validation errors.
  */
 export default class Schemer extends BrowserSchemer {
-
+  /**
+   * Creates a validator function from a schema object
+   *
+   * @param {object} [schemaData={}] - Schema data object
+   * @param {object} [options={}] - AJV options
+   * @returns {Promise<(data: unknown) => boolean>} The AJV validator function, which may have additional properties (e.g., `.errors`)
+   */
   static async from(schemaData={}, options={}) {
     Valid.assert(Data.isPlainObject(schemaData), "Schema data must be a plain object.")
     Valid.assert(Data.isPlainObject(options), "Options must be a plain object.")
@@ -21,6 +27,13 @@ export default class Schemer extends BrowserSchemer {
     return Schemer.getValidator(schemaData, options)
   }
 
+  /**
+   * Creates a validator function from a FileObject
+   *
+   * @param {import("@gesslar/toolkit").FileObject} file - FileObject containing schema data
+   * @param {object} [options={}] - AJV options
+   * @returns {Promise<(data: unknown) => boolean>} The AJV validator function, which may have additional properties (e.g., `.errors`)
+   */
   static async fromFile(file, options={}) {
     Valid.type(file, "FileObject")
     Valid.assert(Data.isPlainObject(options), "Options must be a plain object.")

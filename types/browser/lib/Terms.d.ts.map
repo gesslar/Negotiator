@@ -1,1 +1,1 @@
-{"version":3,"file":"Terms.d.ts","sourceRoot":"","sources":["../../../src/browser/lib/Terms.js"],"names":[],"mappings":"AAQA;;;GAGG;AACH;IAOE;;;;;OAKG;IACH,wBAHW,MAAM,GAAC,MAAM,GACX,MAAM,CA0BlB;IAlCD,6BAEC;IAkCD;;;;OAIG;IACH,kBAFa,MAAM,CAIlB;;CAEF"}
+{"version":3,"file":"Terms.d.ts","sourceRoot":"","sources":["../../../src/browser/lib/Terms.js"],"names":[],"mappings":"AAIA;;;GAGG;AACH;IAOE;;;;;OAKG;IACH,wBAHW,MAAM,GAAC,MAAM,GACX,OAAO,CAAC,MAAM,CAAC,CA0B3B;IAlCD,6BAEC;IAkCD;;;;OAIG;IACH,kBAFa,MAAM,CAIlB;;CAEF"}

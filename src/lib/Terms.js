@@ -12,8 +12,8 @@ export default class Terms extends BrowserTerms {
    * Parses terms data, handling file references
    *
    * @param {string|object} termsData - Terms data or reference
-   * @param {import("./DirectoryObject.js").DirectoryObject?} directoryObject - Directory context for file resolution
-   * @returns {object} Parsed terms data
+   * @param {import("@gesslar/toolkit").DirectoryObject?} directoryObject - Directory context for file resolution
+   * @returns {Promise<object>} Parsed terms data
    */
   static async parse(termsData, directoryObject) {
     if(Data.isType(termsData, "String")) {

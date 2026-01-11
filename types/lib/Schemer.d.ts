@@ -10,7 +10,14 @@
  *   - Use `Schemer.reportValidationErrors(errors)` to format AJV validation errors.
  */
 export default class Schemer extends BrowserSchemer {
-    static fromFile(file: any, options?: {}): Promise<(data: unknown) => boolean>;
+    /**
+     * Creates a validator function from a FileObject
+     *
+     * @param {import("@gesslar/toolkit").FileObject} file - FileObject containing schema data
+     * @param {object} [options={}] - AJV options
+     * @returns {Promise<(data: unknown) => boolean>} The AJV validator function, which may have additional properties (e.g., `.errors`)
+     */
+    static fromFile(file: import("@gesslar/toolkit").FileObject, options?: object): Promise<(data: unknown) => boolean>;
 }
 import { Schemer as BrowserSchemer } from "../browser/index.js";
 //# sourceMappingURL=Schemer.d.ts.map

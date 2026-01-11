@@ -1,3 +1,5 @@
+# Wire Up and Review
+
 ## 🎯 **When Adding New Methods/Classes**
 
 ### **Step 0: Project Snapshot (current state)**

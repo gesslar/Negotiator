@@ -2,10 +2,6 @@ import {Data, Sass} from "@gesslar/toolkit"
 import JSON5 from "json5"
 import yaml from "yaml"
 
-// import Valid from "./Valid.js"
-
-// const refex = /^ref:\/\/(?<file>.*)$/
-
 /**
  * Terms represents an interface definition - what an action promises to provide or accept.
  * It's just the specification, not the negotiation. Contract handles the negotiation.
@@ -20,8 +16,8 @@ export default class Terms {
   /**
    * Parses terms data from strings or objects
    *
-   * @param {string|object} termsData - Terms data to parse
-   * @returns {object} Parsed terms data
+   * @param {string|Record<string, unknown>} termsData - Terms data to parse
+   * @returns {Promise<Record<string, unknown>>} Parsed terms data
    */
   static async parse(termsData) {
     if(Data.isType(termsData, "String")) {
@@ -52,7 +48,7 @@ export default class Terms {
   /**
    * Get the terms definition
    *
-   * @returns {object} The terms definition
+   * @returns {Record<string, unknown>} The terms definition
    */
   get definition() {
     return this.#definition

@@ -37,7 +37,7 @@ export default class Schemer {
       })
 
       if(!response.ok)
-        throw Sass.new(response.status)
+        throw Sass.new(response.statusText)
 
       const json = await response.json()
 
@@ -47,6 +47,13 @@ export default class Schemer {
     }
   }
 
+  /**
+   * Creates a validator function from a schema object
+   *
+   * @param {object} [schemaData={}] - Schema data object
+   * @param {object} [options={}] - AJV options
+   * @returns {Promise<(data: unknown) => boolean>} The AJV validator function, which may have additional properties (e.g., `.errors`)
+   */
   static async from(schemaData={}, options={}) {
     Valid.assert(Data.isPlainObject(schemaData), "Schema data must be a plain object.")
     Valid.assert(Data.isPlainObject(options), "Options must be a plain object.")

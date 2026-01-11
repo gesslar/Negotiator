@@ -7,9 +7,9 @@ export default class Terms {
      * Parses terms data from strings or objects
      *
      * @param {string|object} termsData - Terms data to parse
-     * @returns {object} Parsed terms data
+     * @returns {Promise<object>} Parsed terms data
      */
-    static parse(termsData: string | object): object;
+    static parse(termsData: string | object): Promise<object>;
     constructor(definition: any);
     /**
      * Get the terms definition
