@@ -123,32 +123,40 @@ Create terms definitions to describe what you provide or accept:
 ```javascript
 import {Terms} from "@gesslar/negotiator"
 
-// Provider terms: what you offer
+// Provider terms: what you offer (using JSON Schema)
 const providerTerms = new Terms({
   provides: {
-    user: {
-      dataType: "object",
-      required: true,
-      contains: {
-        id: {dataType: "string", required: true},
-        name: {dataType: "string", required: true},
-        email: {dataType: "string", required: true}
+    type: "object",
+    properties: {
+      user: {
+        type: "object",
+        properties: {
+          id: {type: "string"},
+          name: {type: "string"},
+          email: {type: "string"}
+        },
+        required: ["id", "name", "email"]
       }
-    }
+    },
+    required: ["user"]
   }
 })
 
-// Consumer terms: what you need
+// Consumer terms: what you need (using JSON Schema)
 const consumerTerms = new Terms({
   accepts: {
-    user: {
-      dataType: "object",
-      required: true,
-      contains: {
-        id: {dataType: "string", required: true},
-        name: {dataType: "string", required: true}
+    type: "object",
+    properties: {
+      user: {
+        type: "object",
+        properties: {
+          id: {type: "string"},
+          name: {type: "string"}
+        },
+        required: ["id", "name"]
       }
-    }
+    },
+    required: ["user"]
   }
 })
 ```
@@ -159,10 +167,11 @@ Parse terms from JSON or YAML:
 // From JSON string
 const jsonTerms = `{
   "accepts": {
-    "config": {
-      "dataType": "object",
-      "required": true
-    }
+    "type": "object",
+    "properties": {
+      "config": {"type": "object"}
+    },
+    "required": ["config"]
   }
 }`
 const terms = new Terms(await Terms.parse(jsonTerms))
@@ -170,9 +179,15 @@ const terms = new Terms(await Terms.parse(jsonTerms))
 // From YAML string
 const yamlTerms = `
 provides:
-  data:
-    dataType: array
-    required: true
+  type: object
+  properties:
+    data:
+      type: array
+    status:
+      type: string
+  required:
+    - data
+    - status
 `
 const yamlTermsObj = new Terms(await Terms.parse(yamlTerms))
 ```
@@ -186,34 +201,42 @@ import {Contract, Terms} from "@gesslar/negotiator"
 
 const provider = new Terms({
   provides: {
-    user: {
-      dataType: "object",
-      required: true,
-      contains: {
-        id: {dataType: "string", required: true},
-        name: {dataType: "string", required: true},
-        email: {dataType: "string", required: true}
+    type: "object",
+    properties: {
+      user: {
+        type: "object",
+        properties: {
+          id: {type: "string"},
+          name: {type: "string"},
+          email: {type: "string"}
+        },
+        required: ["id", "name", "email"]
       }
-    }
+    },
+    required: ["user"]
   }
 })
 
 const consumer = new Terms({
   accepts: {
-    user: {
-      dataType: "object",
-      required: true,
-      contains: {
-        id: {dataType: "string", required: true},
-        name: {dataType: "string", required: true}
+    type: "object",
+    properties: {
+      user: {
+        type: "object",
+        properties: {
+          id: {type: "string"},
+          name: {type: "string"}
+        },
+        required: ["id", "name"]
       }
-    }
+    },
+    required: ["user"]
   }
 })
 
 // Negotiate contract
 try {
-  const contract = new Contract(provider, consumer)
+  const contract = await Contract.negotiate(provider, consumer)
   console.log(contract.isNegotiated) // true
 } catch (error) {
   console.error("Negotiation failed:", error.message)
@@ -226,77 +249,74 @@ Contracts fail when requirements aren't met:
 // Provider doesn't have required field
 const insufficientProvider = new Terms({
   provides: {
-    user: {
-      dataType: "object",
-      required: true,
-      contains: {
-        name: {dataType: "string", required: true}
-        // Missing 'id' that consumer requires
+    type: "object",
+    properties: {
+      user: {
+        type: "object",
+        properties: {
+          name: {type: "string"}
+          // Missing 'id' that consumer requires
+        },
+        required: ["name"]
       }
-    }
+    },
+    required: ["user"]
   }
 })
 
-const contract = new Contract(insufficientProvider, consumer)
+const contract = await Contract.negotiate(insufficientProvider, consumer)
 // Throws: "Contract negotiation failed: Provider missing required capability: id"
 ```
 
 ### Real-World Example: Plugin System
 
 ```javascript
-import {Contract, Terms, Schemer} from "@gesslar/negotiator"
+import {Contract, Terms} from "@gesslar/negotiator"
 
-// Plugin defines what it provides
+// Plugin defines what it provides (using JSON Schema)
 const pluginTerms = new Terms({
   provides: {
-    forecast: {
-      dataType: "object",
-      required: true,
-      contains: {
-        temperature: {dataType: "number", required: true},
-        condition: {dataType: "string", required: true}
+    type: "object",
+    properties: {
+      forecast: {
+        type: "object",
+        properties: {
+          temperature: {type: "number"},
+          condition: {type: "string"}
+        },
+        required: ["temperature", "condition"]
       }
-    }
+    },
+    required: ["forecast"]
   }
 })
 
 // App defines what it accepts
 const appTerms = new Terms({
   accepts: {
-    forecast: {
-      dataType: "object",
-      required: true,
-      contains: {
-        temperature: {dataType: "number", required: true}
+    type: "object",
+    properties: {
+      forecast: {
+        type: "object",
+        properties: {
+          temperature: {type: "number"}
+        },
+        required: ["temperature"]
       }
-    }
+    },
+    required: ["forecast"]
   }
 })
 
-// Negotiate compatibility
-const contract = new Contract(pluginTerms, appTerms)
+// Negotiate compatibility — contract gets a validator from provider schema
+const contract = await Contract.negotiate(pluginTerms, appTerms)
 
-// Validate plugin data at runtime
-const validator = await Schemer.from({
-  type: "object",
-  properties: {
-    forecast: {
-      type: "object",
-      properties: {
-        temperature: {type: "number"},
-        condition: {type: "string"}
-      },
-      required: ["temperature", "condition"]
-    }
-  },
-  required: ["forecast"]
-})
-
+// Validate plugin data at runtime using the contract's validator
 const pluginData = {
   forecast: {temperature: 72, condition: "Sunny"}
 }
 
-validator(pluginData) // true
+contract.validate(pluginData) // true
 ```
 
 Are they gone yet? That ... is some _dry_ topic, for sure. Who writes

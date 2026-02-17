@@ -11,13 +11,21 @@ describe("Contract", () => {
     it("creates contract between provider and consumer terms", async () => {
       const providerDef = {
         provides: {
-          name: {dataType: "string", required: true},
-          age: {dataType: "number", required: false}
+          type: "object",
+          properties: {
+            name: {type: "string"},
+            age: {type: "number"}
+          },
+          required: ["name"]
         }
       }
       const consumerDef = {
         requires: {
-          name: {dataType: "string", required: true}
+          type: "object",
+          properties: {
+            name: {type: "string"}
+          },
+          required: ["name"]
         }
       }
 
@@ -53,12 +61,19 @@ describe("Contract", () => {
     it("throws when contract negotiation fails", async () => {
       const providerDef = {
         provides: {
-          age: {dataType: "number"}
+          type: "object",
+          properties: {
+            age: {type: "number"}
+          }
         }
       }
       const consumerDef = {
         requires: {
-          name: {dataType: "string", required: true}
+          type: "object",
+          properties: {
+            name: {type: "string"}
+          },
+          required: ["name"]
         }
       }
 
@@ -246,15 +261,22 @@ describe("Contract", () => {
     it("succeeds when provider meets consumer requirements", async () => {
       const providerDef = {
         provides: {
-          name: {dataType: "string"},
-          age: {dataType: "number"},
-          email: {dataType: "string"}
+          type: "object",
+          properties: {
+            name: {type: "string"},
+            age: {type: "number"},
+            email: {type: "string"}
+          }
         }
       }
       const consumerDef = {
         requires: {
-          name: {dataType: "string", required: true},
-          age: {dataType: "number", required: false}
+          type: "object",
+          properties: {
+            name: {type: "string"},
+            age: {type: "number"}
+          },
+          required: ["name"]
         }
       }
 
@@ -268,13 +290,20 @@ describe("Contract", () => {
     it("fails when provider missing required capabilities", async () => {
       const providerDef = {
         provides: {
-          age: {dataType: "number"}
+          type: "object",
+          properties: {
+            age: {type: "number"}
+          }
         }
       }
       const consumerDef = {
         requires: {
-          name: {dataType: "string", required: true},
-          age: {dataType: "number", required: true}
+          type: "object",
+          properties: {
+            name: {type: "string"},
+            age: {type: "number"}
+          },
+          required: ["name", "age"]
         }
       }
 
@@ -289,12 +318,19 @@ describe("Contract", () => {
     it("fails on type mismatch", async () => {
       const providerDef = {
         provides: {
-          name: {dataType: "number"} // Wrong type
+          type: "object",
+          properties: {
+            name: {type: "number"} // Wrong type
+          }
         }
       }
       const consumerDef = {
         requires: {
-          name: {dataType: "string", required: true}
+          type: "object",
+          properties: {
+            name: {type: "string"}
+          },
+          required: ["name"]
         }
       }
 
@@ -428,24 +464,31 @@ describe("Contract", () => {
     it("provides detailed error messages for complex failures", async () => {
       const providerDef = {
         provides: {
-          user: {
-            dataType: "object",
-            contains: {
-              name: {dataType: "string"}
+          type: "object",
+          properties: {
+            user: {
+              type: "object",
+              properties: {
+                name: {type: "string"}
+              }
             }
           }
         }
       }
       const consumerDef = {
         requires: {
-          user: {
-            dataType: "object",
-            required: true,
-            contains: {
-              name: {dataType: "string", required: true},
-              email: {dataType: "string", required: true}
+          type: "object",
+          properties: {
+            user: {
+              type: "object",
+              properties: {
+                name: {type: "string"},
+                email: {type: "string"}
+              },
+              required: ["name", "email"]
             }
-          }
+          },
+          required: ["user"]
         }
       }
 
@@ -466,13 +509,20 @@ describe("Contract", () => {
 
       const providerDef = {
         provides: {
-          name: {dataType: "string"},
-          age: {dataType: "number"}
+          type: "object",
+          properties: {
+            name: {type: "string"},
+            age: {type: "number"}
+          }
         }
       }
       const consumerDef = {
         requires: {
-          name: {dataType: "string", required: true}
+          type: "object",
+          properties: {
+            name: {type: "string"}
+          },
+          required: ["name"]
         }
       }
 

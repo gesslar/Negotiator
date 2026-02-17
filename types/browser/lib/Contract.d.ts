@@ -11,13 +11,13 @@ export default class Contract {
     /**
      * Negotiates a contract between provider and consumer terms
      *
-     * @param {Terms} providerTerms - What the provider offers
-     * @param {Terms} consumerTerms - What the consumer expects
+     * @param {Terms|object} providerTerms - What the provider offers (Terms instance or plain definition)
+     * @param {Terms|object} consumerTerms - What the consumer expects (Terms instance or plain definition)
      * @param {object} options - Configuration options
      * @param {Function} [options.debug] - Debug function
      * @returns {Promise<Contract>} Negotiated contract
      */
-    static negotiate(providerTerms: Terms, consumerTerms: Terms, { debug }?: {
+    static negotiate(providerTerms: Terms | object, consumerTerms: Terms | object, { debug }?: {
         debug?: Function;
     }): Promise<Contract>;
     /**
@@ -56,15 +56,15 @@ export default class Contract {
     /**
      * Get the provider terms (if any)
      *
-     * @returns {Terms?} Provider terms
+     * @returns {Terms|object|null} Provider terms
      */
-    get providerTerms(): Terms | null;
+    get providerTerms(): Terms | object | null;
     /**
      * Get the consumer terms (if any)
      *
-     * @returns {Terms?} Consumer terms
+     * @returns {Terms|object|null} Consumer terms
      */
-    get consumerTerms(): Terms | null;
+    get consumerTerms(): Terms | object | null;
     /**
      * Get the contract validator
      *
