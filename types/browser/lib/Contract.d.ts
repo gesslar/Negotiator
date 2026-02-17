@@ -1,9 +1,25 @@
 /**
+ * @import {Terms} from "./Terms.js"
+ * @import {ValidateFunction} from "ajv"
+ */
+/**
  * Contract represents a successful negotiation between Terms.
  * It handles validation and compatibility checking between what
  * one action provides and what another accepts.
  */
 export default class Contract {
+    /**
+     * Negotiates a contract between provider and consumer terms
+     *
+     * @param {Terms} providerTerms - What the provider offers
+     * @param {Terms} consumerTerms - What the consumer expects
+     * @param {object} options - Configuration options
+     * @param {Function} [options.debug] - Debug function
+     * @returns {Promise<Contract>} Negotiated contract
+     */
+    static negotiate(providerTerms: Terms, consumerTerms: Terms, { debug }?: {
+        debug?: Function;
+    }): Promise<Contract>;
     /**
      * Extracts the actual schema from a terms definition
      *
@@ -18,22 +34,11 @@ export default class Contract {
      *
      * @param {string} name - Contract identifier
      * @param {object} termsDefinition - The terms definition
-     * @param {import('ajv').ValidateFunction|null} [validator] - Optional AJV schema validator function with .errors property
+     * @param {ValidateFunction} [validator] - Optional AJV schema validator function with .errors property
      * @param {Function} [debug] - Debug function
      * @returns {Contract} New contract instance
      */
-    static fromTerms(name: string, termsDefinition: object, validator?: import("ajv").ValidateFunction | null, debug?: Function): Contract;
-    /**
-     * Creates a contract by negotiating between provider and consumer terms
-     *
-     * @param {import("./Terms.js").default} providerTerms - What the provider offers
-     * @param {import("./Terms.js").default} consumerTerms - What the consumer expects
-     * @param {object} options - Configuration options
-     * @param {Function} [options.debug] - Debug function
-     */
-    constructor(providerTerms: import("./Terms.js").default, consumerTerms: import("./Terms.js").default, { debug }?: {
-        debug?: Function;
-    });
+    static fromTerms(name: string, termsDefinition: object, validator?: ValidateFunction, debug?: Function): Contract;
     /**
      * Validates data against this contract
      *
@@ -51,15 +56,15 @@ export default class Contract {
     /**
      * Get the provider terms (if any)
      *
-     * @returns {import("./Terms.js").default|null} Provider terms
+     * @returns {Terms?} Provider terms
      */
-    get providerTerms(): import("./Terms.js").default | null;
+    get providerTerms(): Terms | null;
     /**
      * Get the consumer terms (if any)
      *
-     * @returns {import("./Terms.js").default|null} Consumer terms
+     * @returns {Terms?} Consumer terms
      */
-    get consumerTerms(): import("./Terms.js").default | null;
+    get consumerTerms(): Terms | null;
     /**
      * Get the contract validator
      *
@@ -68,4 +73,5 @@ export default class Contract {
     get validator(): (data: object) => boolean | null;
     #private;
 }
+import type { ValidateFunction } from "ajv";
 //# sourceMappingURL=Contract.d.ts.map

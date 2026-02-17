@@ -7,7 +7,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { describe, it } from "node:test"
 
-import { Terms } from "../../src/index.js"
+import { Terms } from "../../src/node/index.js"
 
 describe("Terms", () => {
   describe("constructor()", () => {

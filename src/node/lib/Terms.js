@@ -1,5 +1,9 @@
 import {Data, FileObject, Sass, Valid} from "@gesslar/toolkit"
-import {Terms as BrowserTerms} from "../browser/index.js"
+import {Terms as BrowserTerms} from "../../browser/index.js"
+
+/**
+ * @import {DirectoryObject} from "@gesslar/toolkit"
+ */
 
 const refex = /^ref:\/\/(?<file>.*)$/
 
@@ -12,7 +16,7 @@ export default class Terms extends BrowserTerms {
    * Parses terms data, handling file references
    *
    * @param {string|object} termsData - Terms data or reference
-   * @param {import("@gesslar/toolkit").DirectoryObject?} directoryObject - Directory context for file resolution
+   * @param {DirectoryObject?} directoryObject - Directory context for file resolution
    * @returns {Promise<object>} Parsed terms data
    */
   static async parse(termsData, directoryObject) {

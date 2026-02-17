@@ -2,6 +2,10 @@ import {Data, Sass} from "@gesslar/toolkit"
 import Schemer from "./Schemer.js"
 
 /**
+ * @import {Terms} from "./Terms.js"
+ * @import {ValidateFunction} from "ajv"
+ */
+/**
  * Contract represents a successful negotiation between Terms.
  * It handles validation and compatibility checking between what
  * one action provides and what another accepts.
@@ -14,20 +18,24 @@ export default class Contract {
   #isNegotiated = false
 
   /**
-   * Creates a contract by negotiating between provider and consumer terms
+   * Negotiates a contract between provider and consumer terms
    *
-   * @param {import("./Terms.js").default} providerTerms - What the provider offers
-   * @param {import("./Terms.js").default} consumerTerms - What the consumer expects
+   * @param {Terms} providerTerms - What the provider offers
+   * @param {Terms} consumerTerms - What the consumer expects
    * @param {object} options - Configuration options
    * @param {Function} [options.debug] - Debug function
+   * @returns {Promise<Contract>} Negotiated contract
    */
-  constructor(providerTerms, consumerTerms, {debug = null} = {}) {
-    this.#providerTerms = providerTerms
-    this.#consumerTerms = consumerTerms
-    this.#debug = debug
+  static async negotiate(providerTerms, consumerTerms, {debug = null} = {}) {
+    const contract = new this()
 
-    // Perform the negotiation
-    this.#negotiate()
+    contract.#providerTerms = providerTerms
+    contract.#consumerTerms = consumerTerms
+    contract.#debug = debug
+
+    contract.#negotiate()
+
+    return contract
   }
 
   /**
@@ -61,7 +69,7 @@ export default class Contract {
    *
    * @param {string} name - Contract identifier
    * @param {object} termsDefinition - The terms definition
-   * @param {import('ajv').ValidateFunction|null} [validator] - Optional AJV schema validator function with .errors property
+   * @param {ValidateFunction} [validator] - Optional AJV schema validator function with .errors property
    * @param {Function} [debug] - Debug function
    * @returns {Contract} New contract instance
    */
@@ -80,8 +88,9 @@ export default class Contract {
     const schemaDefinition = Contract.#extractSchemaFromTerms(termsDefinition)
     const termsSchemaValidator = Schemer.getValidator(schemaDefinition)
 
-    const contract = new Contract(null, null, {debug})
+    const contract = new this()
     contract.#validator = termsSchemaValidator
+    contract.#debug = debug
     contract.#isNegotiated = true // Single-party contract is automatically negotiated
 
     return contract
@@ -104,15 +113,18 @@ export default class Contract {
 
     // If only one party is missing, that's an error - not a valid contract
     if(!this.#providerTerms || !this.#consumerTerms) {
-      throw Sass.new("Both provider and consumer terms are required for contract negotiation. Use Contract.fromTerms() for single-party contracts.")
+      throw Sass.new(
+        "Both provider and consumer terms are required for contract " +
+        "negotiation. Use Contract.fromTerms() for single-party contracts."
+      )
     }
 
     // Extract content for comparison (ignore TLD metadata)
     const providerContent = Contract.#extractSchemaFromTerms(
-      this.#providerTerms.definition
+      this.#providerTerms
     )
     const consumerContent = Contract.#extractSchemaFromTerms(
-      this.#consumerTerms.definition
+      this.#consumerTerms
     )
 
     // Compare terms for compatibility
@@ -125,6 +137,8 @@ export default class Contract {
     }
 
     this.#isNegotiated = true
+    this.#validator = Schemer.getValidator(providerContent)
+
     this.#debug?.(`Contract negotiated successfully`, 3)
   }
 
@@ -238,7 +252,7 @@ export default class Contract {
   /**
    * Get the provider terms (if any)
    *
-   * @returns {import("./Terms.js").default|null} Provider terms
+   * @returns {Terms?} Provider terms
    */
   get providerTerms() {
     return this.#providerTerms
@@ -247,7 +261,7 @@ export default class Contract {
   /**
    * Get the consumer terms (if any)
    *
-   * @returns {import("./Terms.js").default|null} Consumer terms
+   * @returns {Terms?} Consumer terms
    */
   get consumerTerms() {
     return this.#consumerTerms
