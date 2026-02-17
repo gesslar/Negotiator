@@ -20,8 +20,8 @@ export default class Contract {
   /**
    * Negotiates a contract between provider and consumer terms
    *
-   * @param {Terms} providerTerms - What the provider offers
-   * @param {Terms} consumerTerms - What the consumer expects
+   * @param {Terms|object} providerTerms - What the provider offers (Terms instance or plain definition)
+   * @param {Terms|object} consumerTerms - What the consumer expects (Terms instance or plain definition)
    * @param {object} options - Configuration options
    * @param {Function} [options.debug] - Debug function
    * @returns {Promise<Contract>} Negotiated contract
@@ -120,12 +120,11 @@ export default class Contract {
     }
 
     // Extract content for comparison (ignore TLD metadata)
-    const providerContent = Contract.#extractSchemaFromTerms(
-      this.#providerTerms
-    )
-    const consumerContent = Contract.#extractSchemaFromTerms(
-      this.#consumerTerms
-    )
+    // Support both Terms instances and plain definition objects
+    const providerDef = this.#providerTerms.definition ?? this.#providerTerms
+    const consumerDef = this.#consumerTerms.definition ?? this.#consumerTerms
+    const providerContent = Contract.#extractSchemaFromTerms(providerDef)
+    const consumerContent = Contract.#extractSchemaFromTerms(consumerDef)
 
     // Compare terms for compatibility
     const compatibility = this.#compareTerms(providerContent, consumerContent)
@@ -173,33 +172,39 @@ export default class Contract {
   /**
    * Compares terms for compatibility
    *
-   * @param {object} providerTerms - Terms offered by provider
-   * @param {object} consumerTerms - Terms expected by consumer
+   * @param {object} providerSchema - JSON Schema offered by provider
+   * @param {object} consumerSchema - JSON Schema expected by consumer
    * @param {Array<string>} stack - Stack trace for nested validation
-   * @returns {object} Result with status and errors
+   * @returns {{status: string, errors: Array<Sass>}} Result with status and errors
    * @private
    */
-  #compareTerms(providerTerms, consumerTerms, stack = []) {
+  #compareTerms(providerSchema, consumerSchema, stack = []) {
     const debug = this.#debug
     const breadcrumb = key => (stack.length ? `@${[...stack, key].join(".")}` : "")
     const errors = []
 
-    if(!providerTerms || !consumerTerms) {
+    if(!providerSchema || !consumerSchema) {
       return {
         status: "error",
         errors: [Sass.new("Both provider and consumer terms are required")]
       }
     }
 
+    const providerProps = providerSchema.properties ?? {}
+    const consumerProps = consumerSchema.properties ?? {}
+    const consumerRequired = new Set(consumerSchema.required ?? [])
+
     debug?.("Comparing provider keys:%o with consumer keys:%o", 3,
-      Object.keys(providerTerms), Object.keys(consumerTerms))
+      Object.keys(providerProps), Object.keys(consumerProps))
 
     // Check that consumer requirements are met by provider
-    for(const [key, consumerRequirement] of Object.entries(consumerTerms)) {
-      debug?.("Checking consumer requirement: %o [required = %o]", 3,
-        key, consumerRequirement.required ?? false)
+    for(const [key, consumerProp] of Object.entries(consumerProps)) {
+      const isRequired = consumerRequired.has(key)
 
-      if(consumerRequirement.required && !(key in providerTerms)) {
+      debug?.("Checking consumer requirement: %o [required = %o]", 3,
+        key, isRequired)
+
+      if(isRequired && !(key in providerProps)) {
         debug?.("Provider missing required capability: %o", 2, key)
         const path = breadcrumb(key)
         errors.push(
@@ -208,9 +213,9 @@ export default class Contract {
         continue
       }
 
-      if(key in providerTerms) {
-        const expectedType = consumerRequirement.dataType
-        const providedType = providerTerms[key]?.dataType
+      if(key in providerProps) {
+        const expectedType = consumerProp.type
+        const providedType = providerProps[key]?.type
 
         if(expectedType && providedType && expectedType !== providedType) {
           const path = breadcrumb(key)
@@ -221,12 +226,12 @@ export default class Contract {
           )
         }
 
-        // Recursive validation for nested requirements
-        if(consumerRequirement.contains) {
+        // Recursive validation for nested properties
+        if(consumerProp.properties) {
           debug?.("Recursing into nested requirement: %o", 3, key)
           const nestedResult = this.#compareTerms(
-            providerTerms[key]?.contains,
-            consumerRequirement.contains,
+            providerProps[key],
+            consumerProp,
             [...stack, key]
           )
 
@@ -252,7 +257,7 @@ export default class Contract {
   /**
    * Get the provider terms (if any)
    *
-   * @returns {Terms?} Provider terms
+   * @returns {Terms|object|null} Provider terms
    */
   get providerTerms() {
     return this.#providerTerms
@@ -261,7 +266,7 @@ export default class Contract {
   /**
    * Get the consumer terms (if any)
    *
-   * @returns {Terms?} Consumer terms
+   * @returns {Terms|object|null} Consumer terms
    */
   get consumerTerms() {
     return this.#consumerTerms

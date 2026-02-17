@@ -14,8 +14,8 @@ export default class Contract extends BrowserContract {
    * Negotiates a contract between provider and consumer terms.
    * Node version — override point for file-based schema resolution.
    *
-   * @param {Terms} providerTerms - What the provider offers
-   * @param {Terms} consumerTerms - What the consumer expects
+   * @param {Terms|object} providerTerms - What the provider offers (Terms instance or plain definition)
+   * @param {Terms|object} consumerTerms - What the consumer expects (Terms instance or plain definition)
    * @param {object} options - Configuration options
    * @param {Function} [options.debug] - Debug function
    * @returns {Promise<Contract>} Negotiated contract
