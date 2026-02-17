@@ -1,4 +1,7 @@
 /**
+ * @import {FileObject} from "@gesslar/toolkit"
+ */
+/**
  * Node-enhanced Schemer with file-based schema loading capabilities.
  * Extends the browser version with FileObject support and uses Node Sass for errors.
  *
@@ -13,11 +16,12 @@ export default class Schemer extends BrowserSchemer {
     /**
      * Creates a validator function from a FileObject
      *
-     * @param {import("@gesslar/toolkit").FileObject} file - FileObject containing schema data
+     * @param {FileObject} file - FileObject containing schema data
      * @param {object} [options={}] - AJV options
      * @returns {Promise<(data: unknown) => boolean>} The AJV validator function, which may have additional properties (e.g., `.errors`)
      */
-    static fromFile(file: import("@gesslar/toolkit").FileObject, options?: object): Promise<(data: unknown) => boolean>;
+    static fromFile(file: FileObject, options?: object): Promise<(data: unknown) => boolean>;
 }
-import { Schemer as BrowserSchemer } from "../browser/index.js";
+import { Schemer as BrowserSchemer } from "../../browser/index.js";
+import type { FileObject } from "@gesslar/toolkit";
 //# sourceMappingURL=Schemer.d.ts.map

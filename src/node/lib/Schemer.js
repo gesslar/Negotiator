@@ -1,5 +1,9 @@
-import {Schemer as BrowserSchemer} from "../browser/index.js"
+import {Schemer as BrowserSchemer} from "../../browser/index.js"
 import {Data, Valid} from "@gesslar/toolkit"
+
+/**
+ * @import {FileObject} from "@gesslar/toolkit"
+ */
 
 /**
  * Node-enhanced Schemer with file-based schema loading capabilities.
@@ -30,7 +34,7 @@ export default class Schemer extends BrowserSchemer {
   /**
    * Creates a validator function from a FileObject
    *
-   * @param {import("@gesslar/toolkit").FileObject} file - FileObject containing schema data
+   * @param {FileObject} file - FileObject containing schema data
    * @param {object} [options={}] - AJV options
    * @returns {Promise<(data: unknown) => boolean>} The AJV validator function, which may have additional properties (e.g., `.errors`)
    */

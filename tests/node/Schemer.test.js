@@ -7,7 +7,7 @@ import {join} from "node:path"
 import {tmpdir} from "node:os"
 
 import {FileObject, Sass} from "@gesslar/toolkit"
-import {Schemer} from "../../src/index.js"
+import {Schemer} from "../../src/node/index.js"
 
 // Store original fetch
 const originalFetch = globalThis.fetch

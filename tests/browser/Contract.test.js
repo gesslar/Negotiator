@@ -7,8 +7,8 @@ import {Sass} from "@gesslar/toolkit"
 import {Contract, Terms} from "../../src/browser/index.js"
 
 describe("Contract", () => {
-  describe("constructor()", () => {
-    it("creates contract between provider and consumer terms", () => {
+  describe("negotiate()", () => {
+    it("creates contract between provider and consumer terms", async () => {
       const providerDef = {
         provides: {
           name: {dataType: "string", required: true},
@@ -23,7 +23,7 @@ describe("Contract", () => {
 
       const provider = new Terms(providerDef)
       const consumer = new Terms(consumerDef)
-      const contract = new Contract(provider, consumer)
+      const contract = await Contract.negotiate(provider, consumer)
 
       assert.ok(contract instanceof Contract)
       assert.equal(contract.isNegotiated, true)
@@ -31,8 +31,8 @@ describe("Contract", () => {
       assert.strictEqual(contract.consumerTerms, consumer)
     })
 
-    it("creates single-party contract with null terms", () => {
-      const contract = new Contract(null, null)
+    it("creates single-party contract with null terms", async () => {
+      const contract = await Contract.negotiate(null, null)
 
       assert.ok(contract instanceof Contract)
       assert.equal(contract.isNegotiated, true)
@@ -40,17 +40,17 @@ describe("Contract", () => {
       assert.equal(contract.consumerTerms, null)
     })
 
-    it("accepts debug function option", () => {
+    it("accepts debug function option", async () => {
       const debugCalls = []
       const debug = (msg, level, ...args) => debugCalls.push({msg, level, args})
 
-      const contract = new Contract(null, null, {debug})
+      const contract = await Contract.negotiate(null, null, {debug})
 
       assert.ok(contract instanceof Contract)
       // Single party contracts don't generate debug messages during negotiation
     })
 
-    it("throws when contract negotiation fails", () => {
+    it("throws when contract negotiation fails", async () => {
       const providerDef = {
         provides: {
           age: {dataType: "number"}
@@ -65,8 +65,8 @@ describe("Contract", () => {
       const provider = new Terms(providerDef)
       const consumer = new Terms(consumerDef)
 
-      assert.throws(() => {
-        new Contract(provider, consumer)
+      await assert.rejects(async () => {
+        await Contract.negotiate(provider, consumer)
       }, (error) => {
         return error instanceof Sass &&
                error.message.includes("Contract negotiation failed") &&
@@ -230,23 +230,8 @@ describe("Contract", () => {
       })
     })
 
-    it("throws when contract not negotiated", () => {
-      // This test checks that Contract.validate() throws when no validator is available
-      // Since we can't actually create an unnegotiated contract (they throw during construction),
-      // we test the "no validator available" path which has the same effect
-      const contract = new Contract(null, null)
-
-      assert.throws(() => {
-        contract.validate({})
-      }, (error) => {
-        return error instanceof Sass &&
-               error.message.includes("No validator available")
-      })
-    })
-
-    it("throws when no validator available", () => {
-      // Create contract without validator
-      const contract = new Contract(null, null)
+    it("throws when no validator available", async () => {
+      const contract = await Contract.negotiate(null, null)
 
       assert.throws(() => {
         contract.validate({})
@@ -258,7 +243,7 @@ describe("Contract", () => {
   })
 
   describe("negotiation process", () => {
-    it("succeeds when provider meets consumer requirements", () => {
+    it("succeeds when provider meets consumer requirements", async () => {
       const providerDef = {
         provides: {
           name: {dataType: "string"},
@@ -275,12 +260,12 @@ describe("Contract", () => {
 
       const provider = new Terms(providerDef)
       const consumer = new Terms(consumerDef)
-      const contract = new Contract(provider, consumer)
+      const contract = await Contract.negotiate(provider, consumer)
 
       assert.equal(contract.isNegotiated, true)
     })
 
-    it("fails when provider missing required capabilities", () => {
+    it("fails when provider missing required capabilities", async () => {
       const providerDef = {
         provides: {
           age: {dataType: "number"}
@@ -296,12 +281,12 @@ describe("Contract", () => {
       const provider = new Terms(providerDef)
       const consumer = new Terms(consumerDef)
 
-      assert.throws(() => {
-        new Contract(provider, consumer)
+      await assert.rejects(async () => {
+        await Contract.negotiate(provider, consumer)
       }, /missing required capability.*name/)
     })
 
-    it("fails on type mismatch", () => {
+    it("fails on type mismatch", async () => {
       const providerDef = {
         provides: {
           name: {dataType: "number"} // Wrong type
@@ -316,12 +301,12 @@ describe("Contract", () => {
       const provider = new Terms(providerDef)
       const consumer = new Terms(consumerDef)
 
-      assert.throws(() => {
-        new Contract(provider, consumer)
+      await assert.rejects(async () => {
+        await Contract.negotiate(provider, consumer)
       }, /Type mismatch.*Consumer expects.*provider offers/)
     })
 
-    it("fails when both provider and consumer extracted schemas are null", () => {
+    it("fails when both provider and consumer extracted schemas are null", async () => {
       const providerDef = {
         provides: null
       }
@@ -332,15 +317,15 @@ describe("Contract", () => {
       const provider = new Terms(providerDef)
       const consumer = new Terms(consumerDef)
 
-      assert.throws(() => {
-        new Contract(provider, consumer)
+      await assert.rejects(async () => {
+        await Contract.negotiate(provider, consumer)
       }, (error) => {
         return error instanceof Sass &&
                error.message.includes("Both provider and consumer terms are required")
       })
     })
 
-    it("fails when both provider and consumer extracted schemas are undefined", () => {
+    it("fails when both provider and consumer extracted schemas are undefined", async () => {
       const providerDef = {
         provides: undefined
       }
@@ -351,8 +336,8 @@ describe("Contract", () => {
       const provider = new Terms(providerDef)
       const consumer = new Terms(consumerDef)
 
-      assert.throws(() => {
-        new Contract(provider, consumer)
+      await assert.rejects(async () => {
+        await Contract.negotiate(provider, consumer)
       }, (error) => {
         return error instanceof Sass &&
                error.message.includes("Both provider and consumer terms are required")
@@ -361,43 +346,43 @@ describe("Contract", () => {
   })
 
   describe("getters", () => {
-    it("isNegotiated returns negotiation status", () => {
-      const contract = new Contract(null, null)
+    it("isNegotiated returns negotiation status", async () => {
+      const contract = await Contract.negotiate(null, null)
       assert.equal(contract.isNegotiated, true)
     })
 
-    it("providerTerms returns provider terms", () => {
+    it("providerTerms returns provider terms", async () => {
       const provider = new Terms({provides: {}})
       const consumer = new Terms({accepts: {}})
-      const contract = new Contract(provider, consumer)
+      const contract = await Contract.negotiate(provider, consumer)
 
       assert.strictEqual(contract.providerTerms, provider)
     })
 
-    it("consumerTerms returns consumer terms", () => {
+    it("consumerTerms returns consumer terms", async () => {
       const provider = new Terms({provides: {}})
       const consumer = new Terms({accepts: {}})
-      const contract = new Contract(provider, consumer)
+      const contract = await Contract.negotiate(provider, consumer)
 
       assert.strictEqual(contract.consumerTerms, consumer)
     })
 
-    it("throws error when only provider is provided", () => {
+    it("throws error when only provider is provided", async () => {
       const provider = new Terms({provides: {}})
 
-      assert.throws(() => {
-        new Contract(provider, null)
+      await assert.rejects(async () => {
+        await Contract.negotiate(provider, null)
       }, (error) => {
         return error instanceof Sass &&
                error.message.includes("Both provider and consumer terms are required")
       })
     })
 
-    it("throws error when only consumer is provided", () => {
+    it("throws error when only consumer is provided", async () => {
       const consumer = new Terms({accepts: {}})
 
-      assert.throws(() => {
-        new Contract(null, consumer)
+      await assert.rejects(async () => {
+        await Contract.negotiate(null, consumer)
       }, (error) => {
         return error instanceof Sass &&
                error.message.includes("Both provider and consumer terms are required")
@@ -417,30 +402,30 @@ describe("Contract", () => {
       assert.equal(validator(123), false)
     })
 
-    it("validator returns null when no validator available", () => {
-      const contract = new Contract(null, null)
+    it("validator returns null when no validator available", async () => {
+      const contract = await Contract.negotiate(null, null)
 
       assert.equal(contract.validator, null)
     })
   })
 
   describe("edge cases and error handling", () => {
-    it("handles null provider and consumer terms", () => {
-      const contract = new Contract(null, null)
+    it("handles null provider and consumer terms", async () => {
+      const contract = await Contract.negotiate(null, null)
 
       assert.ok(contract instanceof Contract)
       assert.equal(contract.isNegotiated, true)
     })
 
-    it("handles empty terms definitions", () => {
+    it("handles empty terms definitions", async () => {
       const provider = new Terms({provides: {}})
       const consumer = new Terms({requires: {}})
-      const contract = new Contract(provider, consumer)
+      const contract = await Contract.negotiate(provider, consumer)
 
       assert.equal(contract.isNegotiated, true)
     })
 
-    it("provides detailed error messages for complex failures", () => {
+    it("provides detailed error messages for complex failures", async () => {
       const providerDef = {
         provides: {
           user: {
@@ -467,15 +452,15 @@ describe("Contract", () => {
       const provider = new Terms(providerDef)
       const consumer = new Terms(consumerDef)
 
-      assert.throws(() => {
-        new Contract(provider, consumer)
+      await assert.rejects(async () => {
+        await Contract.negotiate(provider, consumer)
       }, (error) => {
         return error instanceof Sass &&
                error.message.includes("Contract negotiation failed")
       })
     })
 
-    it("handles debug function calls during negotiation", () => {
+    it("handles debug function calls during negotiation", async () => {
       const debugCalls = []
       const debug = (msg, level, ...args) => debugCalls.push({msg, level, args})
 
@@ -493,7 +478,7 @@ describe("Contract", () => {
 
       const provider = new Terms(providerDef)
       const consumer = new Terms(consumerDef)
-      const contract = new Contract(provider, consumer, {debug})
+      const contract = await Contract.negotiate(provider, consumer, {debug})
 
       assert.equal(contract.isNegotiated, true)
       // Should have at least one debug call for successful negotiation
@@ -558,12 +543,7 @@ describe("Contract", () => {
 
       const contract = Contract.fromTerms("debug-test", termsDefinition, null, debug)
 
-      // Mock the debug function on the contract
-      contract.debug = debug
-
       contract.validate("test")
-
-      // Debug calls would happen during validation in the actual implementation
     })
   })
 
