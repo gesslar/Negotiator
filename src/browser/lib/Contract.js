@@ -252,16 +252,20 @@ export default class Contract {
         }
 
         // Recursive validation for array items
-        if(consumerProp.type === "array" && consumerProp.items && providerProps[key]?.items) {
-          debug?.("Recursing into array items for: %o", 3, key)
-          const nestedResult = this.#compareTerms(
-            providerProps[key].items,
-            consumerProp.items,
-            [...stack, key, "[]"]
-          )
+        if(consumerProp.type === "array" && consumerProp.items) {
+          if(!providerProps[key]?.items) {
+            errors.push(`${[...stack, key, "[]"].join(".")}: provider array is missing item schema required by consumer`)
+          } else {
+            debug?.("Recursing into array items for: %o", 3, key)
+            const nestedResult = this.#compareTerms(
+              providerProps[key].items,
+              consumerProp.items,
+              [...stack, key, "[]"]
+            )
 
-          if(nestedResult.errors.length) {
-            errors.push(...nestedResult.errors)
+            if(nestedResult.errors.length) {
+              errors.push(...nestedResult.errors)
+            }
           }
         }
       }
