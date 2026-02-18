@@ -201,6 +201,17 @@ describe("Contract", () => {
                error.message.includes("exactly one top-level key")
       })
     })
+
+    it("allows $schema alongside the descriptor key", () => {
+      const termsDefinition = {
+        $schema: "https://example.com/schema.json",
+        provides: {type: "string"}
+      }
+
+      const contract = Contract.fromTerms("test", termsDefinition)
+      assert.ok(contract instanceof Contract)
+      assert.equal(contract.isNegotiated, true)
+    })
   })
 
   describe("validate()", () => {
@@ -266,7 +277,8 @@ describe("Contract", () => {
             name: {type: "string"},
             age: {type: "number"},
             email: {type: "string"}
-          }
+          },
+          required: ["name", "age", "email"]
         }
       }
       const consumerDef = {
@@ -321,7 +333,8 @@ describe("Contract", () => {
           type: "object",
           properties: {
             name: {type: "number"} // Wrong type
-          }
+          },
+          required: ["name"]
         }
       }
       const consumerDef = {
@@ -340,6 +353,111 @@ describe("Contract", () => {
       await assert.rejects(async () => {
         await Contract.negotiate(provider, consumer)
       }, /Type mismatch.*Consumer expects.*provider offers/)
+    })
+
+    it("fails when provider array items missing required capabilities", async () => {
+      const providerDef = {
+        provides: {
+          type: "object",
+          properties: {
+            items: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: {type: "string"}
+                },
+                required: ["name"]
+              }
+            }
+          },
+          required: ["items"]
+        }
+      }
+      const consumerDef = {
+        requires: {
+          type: "object",
+          properties: {
+            items: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: {type: "string"},
+                  signature: {type: "string"}
+                },
+                required: ["name", "signature"]
+              }
+            }
+          },
+          required: ["items"]
+        }
+      }
+
+      const provider = new Terms(providerDef)
+      const consumer = new Terms(consumerDef)
+
+      await assert.rejects(async () => {
+        await Contract.negotiate(provider, consumer)
+      }, (error) => {
+        return error instanceof Sass &&
+               error.message.includes("Contract negotiation failed") &&
+               error.message.includes("signature")
+      })
+    })
+
+    it("fails when provider array items have field but do not guarantee it", async () => {
+      const providerDef = {
+        provides: {
+          type: "object",
+          properties: {
+            items: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: {type: "string"},
+                  signature: {type: "string"}
+                  // signature present but not required — not guaranteed
+                },
+                required: ["name"]
+              }
+            }
+          },
+          required: ["items"]
+        }
+      }
+      const consumerDef = {
+        requires: {
+          type: "object",
+          properties: {
+            items: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: {type: "string"},
+                  signature: {type: "string"}
+                },
+                required: ["name", "signature"]
+              }
+            }
+          },
+          required: ["items"]
+        }
+      }
+
+      const provider = new Terms(providerDef)
+      const consumer = new Terms(consumerDef)
+
+      await assert.rejects(async () => {
+        await Contract.negotiate(provider, consumer)
+      }, (error) => {
+        return error instanceof Sass &&
+               error.message.includes("Contract negotiation failed") &&
+               error.message.includes("does not guarantee required capability") &&
+               error.message.includes("signature")
+      })
     })
 
     it("fails when both provider and consumer extracted schemas are null", async () => {
@@ -513,7 +631,8 @@ describe("Contract", () => {
           properties: {
             name: {type: "string"},
             age: {type: "number"}
-          }
+          },
+          required: ["name", "age"]
         }
       }
       const consumerDef = {
