@@ -52,8 +52,10 @@ export default class Contract {
       throw Sass.new("Terms definition must be a plain object")
     }
 
-    // Must have exactly one key (the TLD/descriptor)
-    const keys = Object.keys(definition)
+    // Must have exactly one non-metadata key (the TLD/descriptor)
+    // $schema is allowed as a metadata annotation and is ignored
+    const METADATA_KEYS = new Set(["$schema", "$id"])
+    const keys = Object.keys(definition).filter(k => !METADATA_KEYS.has(k))
     if(keys.length !== 1) {
       throw Sass.new("Terms definition must have exactly one top-level key (descriptor)")
     }
@@ -193,6 +195,7 @@ export default class Contract {
     const providerProps = providerSchema.properties ?? {}
     const consumerProps = consumerSchema.properties ?? {}
     const consumerRequired = new Set(consumerSchema.required ?? [])
+    const providerRequired = new Set(providerSchema.required ?? [])
 
     debug?.("Comparing provider keys:%o with consumer keys:%o", 3,
       Object.keys(providerProps), Object.keys(consumerProps))
@@ -211,6 +214,14 @@ export default class Contract {
           Sass.new(`Provider missing required capability: ${key}${path ? ` ${path}` : ""}`)
         )
         continue
+      }
+
+      if(isRequired && !providerRequired.has(key)) {
+        debug?.("Provider does not guarantee required capability: %o", 2, key)
+        const path = breadcrumb(key)
+        errors.push(
+          Sass.new(`Provider does not guarantee required capability: ${key}${path ? ` ${path}` : ""}`)
+        )
       }
 
       if(key in providerProps) {
@@ -233,6 +244,20 @@ export default class Contract {
             providerProps[key],
             consumerProp,
             [...stack, key]
+          )
+
+          if(nestedResult.errors.length) {
+            errors.push(...nestedResult.errors)
+          }
+        }
+
+        // Recursive validation for array items
+        if(consumerProp.type === "array" && consumerProp.items && providerProps[key]?.items) {
+          debug?.("Recursing into array items for: %o", 3, key)
+          const nestedResult = this.#compareTerms(
+            providerProps[key].items,
+            consumerProp.items,
+            [...stack, key, "[]"]
           )
 
           if(nestedResult.errors.length) {
