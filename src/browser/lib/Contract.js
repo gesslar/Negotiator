@@ -253,8 +253,11 @@ export default class Contract {
 
         // Recursive validation for array items
         if(consumerProp.type === "array" && consumerProp.items) {
-          if(!providerProps[key]?.items) {
-            errors.push(`${[...stack, key, "[]"].join(".")}: provider array is missing item schema required by consumer`)
+          if(!providerProps[key] || !("items" in providerProps[key])) {
+            const path = breadcrumb(key)
+            errors.push(
+              Sass.new(`Provider array missing item schema required by consumer: ${key}${path ? ` ${path}` : ""}`)
+            )
           } else {
             debug?.("Recursing into array items for: %o", 3, key)
             const nestedResult = this.#compareTerms(

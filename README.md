@@ -343,6 +343,5 @@ bye
 “Negotiator lets independent systems prove they’re compatible before exchanging
 data.”
 
-^ ChatGPT said I should put that there because something about being the
-anchor? But it also said to put it at the top and that's not how anchors work,
-ChatGPT.
+^ ChatGPT said I should include this because something about being the anchor?
+But it also said to put it at the top and that's not how anchors work, ChatGPT.
