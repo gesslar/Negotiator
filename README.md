@@ -331,10 +331,10 @@ Oh. Someone's still here. Okay. _clears throat_
 This module has been brought to you today by the letters, F, and U. And by the
 number 87.
 
-Also, all of my code here is under the [Unlicense](https://unlicense.org/)
-because seriously, and I cannot stress this enough, absolutely nothing in this
-is worth protecting. If _anything_, it could maybe use a nap, or, what's the
-opposite of a nap... uhhhhh karaoke?
+Also, all of my code here is under the 0BSD because seriously, and I cannot
+stress this enough, absolutely nothing in this is worth protecting. If
+_anything_, it could maybe use a nap, or, what's the opposite of a nap...
+uhhhhh karaoke?
 
 bye
 
@@ -345,3 +345,17 @@ data.”
 
 ^ ChatGPT said I should include this because something about being the anchor?
 But it also said to put it at the top and that's not how anchors work, ChatGPT.
+
+## License
+
+`@gesslar/negotiator` is released into the public domain under the [0BSD](LICENSE.txt).
+
+This package includes or depends on third-party components under their own
+licenses:
+
+| Dependency | License |
+| --- | --- |
+| [@gesslar/toolkit](https://github.com/gesslar/toolkit) | 0BSD |
+| [ajv](https://github.com/ajv-validator/ajv) | MIT |
+| [json5](https://github.com/json5/json5) | MIT |
+| [yaml](https://github.com/eemeli/yaml) | ISC |
