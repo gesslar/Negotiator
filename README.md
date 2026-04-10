@@ -348,7 +348,7 @@ But it also said to put it at the top and that's not how anchors work, ChatGPT.
 
 ## License
 
-`@gesslar/negotiator` is released into the public domain under the [0BSD](LICENSE.txt).
+`@gesslar/negotiator` is released under the [0BSD](LICENSE.txt).
 
 This package includes or depends on third-party components under their own
 licenses:
