@@ -6,7 +6,7 @@
     "url": "https://gesslar.dev"
   },
   "version": "0.4.0",
-  "license": "Unlicense",
+  "license": "0BSD",
   "homepage": "https://github.com/gesslar/Negotiator#readme",
   "repository": {
     "type": "git",
@@ -23,22 +23,21 @@
     "interface",
     "api-contract"
   ],
-  "packageManager": "pnpm@10.29.3",
   "engines": {
-    "node": ">=22"
+    "node": ">=24.11.0"
   },
   "scripts": {
     "types": "node -e \"require('fs').rmSync('types',{recursive:true,force:true});\" && tsc -p tsconfig.types.json",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "submit": "pnpm publish --access public --//registry.npmjs.org/:_authToken=\"${NPM_ACCESS_TOKEN}\"",
-    "update": "pnpm self-update && pnpx npm-check-updates -u && pnpm install",
+    "submit": "npm publish --access public --//registry.npmjs.org/:_authToken=\"${NPM_ACCESS_TOKEN}\"",
+    "update": "npx npm-check-updates -u && npm install",
     "test": "node --test tests/**/*.test.js",
     "test:coverage": "node --experimental-config-file=node.config.json --experimental-test-coverage --test-timeout=3000 --test tests/**/*.test.js",
     "pr": "gt submit -p --ai",
-    "patch": "pnpm version patch",
-    "minor": "pnpm version minor",
-    "major": "pnpm version major",
+    "patch": "npm version patch",
+    "minor": "npm version minor",
+    "major": "npm version major",
     "work": "node work/run-all.js",
     "work:schema": "node work/01-basic-schema.js",
     "work:terms": "node work/02-terms-definition.js",
@@ -66,18 +65,18 @@
   "files": [
     "src/",
     "types/",
-    "UNLICENSE.txt"
+    "LICENSE.txt"
   ],
   "type": "module",
   "devDependencies": {
-    "@gesslar/uglier": "^2.0.0",
-    "eslint": "^10.0.0",
+    "@gesslar/uglier": "^2.4.0",
+    "eslint": "^10.2.0",
     "typescript": "^6.0.2"
   },
   "dependencies": {
-    "@gesslar/toolkit": "^5.0.0",
+    "@gesslar/toolkit": "^5.0.1",
     "ajv": "^8.18.0",
     "json5": "^2.2.3",
-    "yaml": "^2.8.2"
+    "yaml": "^2.8.3"
   }
 }
